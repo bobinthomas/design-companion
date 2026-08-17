@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { generateStructured } from "@/lib/anthropic";
+import { generateStructured } from "@/lib/generate";
 import { FEEDBACK_SYSTEM_PROMPT, buildFeedbackUserPrompt } from "@/lib/prompts/feedback";
 import { mockFeedbackOutput } from "@/lib/mocks/feedback";
 import { feedbackOutputSchema, type GenerateRequestBody } from "@/lib/types";
+import { friendlyErrorMessage } from "@/lib/errors";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as GenerateRequestBody;
@@ -20,13 +21,11 @@ export async function POST(request: Request) {
       userPrompt: buildFeedbackUserPrompt(body),
       schema: feedbackOutputSchema,
       mock: mockFeedbackOutput,
+      clientConfig: body.clientConfig,
     });
     return NextResponse.json(result);
   } catch (error) {
     console.error("feedback generation failed", error);
-    return NextResponse.json(
-      { error: "Something went wrong. Try again in a moment." },
-      { status: 502 }
-    );
+    return NextResponse.json({ error: friendlyErrorMessage(error) }, { status: 502 });
   }
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Provider, ProviderClientConfig } from "@/lib/providers";
 
 export type Mode = "layout" | "copy" | "feedback";
 
@@ -90,11 +91,12 @@ export interface GenerateRequestBody {
   tone?: string;
   priorOutput?: unknown;
   refinementInstruction?: string;
+  clientConfig?: ProviderClientConfig;
 }
 
 export interface GenerateResponseBody<T> {
   data: T;
-  source: "claude" | "mock";
+  source: Provider | "mock";
 }
 
 export interface GenerateErrorBody {

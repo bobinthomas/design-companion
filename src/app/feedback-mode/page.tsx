@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { InputPanel } from "@/components/InputPanel";
 import { RefineBar } from "@/components/RefineBar";
 import { FeedbackOutput } from "@/components/FeedbackOutput";
@@ -9,13 +10,15 @@ import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { Badge } from "@/components/Badge";
 import { SAMPLE_FEEDBACK_INPUT } from "@/lib/mocks/feedback";
+import { loadSettings } from "@/lib/clientSettings";
+import { PROVIDER_LABELS, type Provider } from "@/lib/providers";
 import type { FeedbackOutput as FeedbackOutputData } from "@/lib/types";
 
 export default function FeedbackModePage() {
   const [input, setInput] = useState("");
   const [refinement, setRefinement] = useState("");
   const [output, setOutput] = useState<FeedbackOutputData | null>(null);
-  const [source, setSource] = useState<"claude" | "mock" | null>(null);
+  const [source, setSource] = useState<Provider | "mock" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +33,7 @@ export default function FeedbackModePage() {
           input,
           priorOutput: refinementInstruction ? output : undefined,
           refinementInstruction,
+          clientConfig: loadSettings() ?? undefined,
         }),
       });
       const body = await res.json();
@@ -84,7 +88,11 @@ export default function FeedbackModePage() {
               Here&rsquo;s a starting point. Refine it with your team.
             </span>
             {source === "mock" ? (
-              <Badge>Demo data — add ANTHROPIC_API_KEY for live generation</Badge>
+              <Link href="/settings">
+                <Badge>Demo data — add your key in Settings for live generation</Badge>
+              </Link>
+            ) : source ? (
+              <Badge tone="accent">Live · {PROVIDER_LABELS[source]}</Badge>
             ) : null}
           </div>
           <FeedbackOutput output={output} />

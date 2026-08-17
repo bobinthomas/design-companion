@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { InputPanel } from "@/components/InputPanel";
 import { ToneSelector } from "@/components/ToneSelector";
 import { RefineBar } from "@/components/RefineBar";
@@ -9,6 +10,8 @@ import { LoadingState } from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { Badge } from "@/components/Badge";
+import { loadSettings } from "@/lib/clientSettings";
+import { PROVIDER_LABELS, type Provider } from "@/lib/providers";
 import type { CopyOutput as CopyOutputData } from "@/lib/types";
 
 export default function CopyModePage() {
@@ -16,7 +19,7 @@ export default function CopyModePage() {
   const [tone, setTone] = useState("Professional");
   const [refinement, setRefinement] = useState("");
   const [output, setOutput] = useState<CopyOutputData | null>(null);
-  const [source, setSource] = useState<"claude" | "mock" | null>(null);
+  const [source, setSource] = useState<Provider | "mock" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +35,7 @@ export default function CopyModePage() {
           tone,
           priorOutput: refinementInstruction ? output : undefined,
           refinementInstruction,
+          clientConfig: loadSettings() ?? undefined,
         }),
       });
       const body = await res.json();
@@ -78,7 +82,11 @@ export default function CopyModePage() {
               Here&rsquo;s a starting point. Refine it with your team.
             </span>
             {source === "mock" ? (
-              <Badge>Demo data — add ANTHROPIC_API_KEY for live generation</Badge>
+              <Link href="/settings">
+                <Badge>Demo data — add your key in Settings for live generation</Badge>
+              </Link>
+            ) : source ? (
+              <Badge tone="accent">Live · {PROVIDER_LABELS[source]}</Badge>
             ) : null}
           </div>
           <CopyOutput output={output} />
