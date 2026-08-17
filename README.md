@@ -1,5 +1,7 @@
 # Design Companion
 
+**Live demo:** https://design-companion.bobinthomas.workers.dev (runs on demo data — see below)
+
 A prototype AI co-pilot for product designers with three focused modes:
 
 - **Layout Brainstorm** — 2–3 structured, genuinely distinct layout directions for a screen or flow
@@ -24,6 +26,20 @@ The app works immediately with **no setup** — every mode falls back to realist
 1. Copy `.env.local.example` to `.env.local`.
 2. Set `ANTHROPIC_API_KEY` to a real Anthropic API key.
 3. Restart the dev server. Generation now calls Claude directly; the mock fallback only kicks back in if the key is removed or a request fails.
+
+## Deployment
+
+Hosted on Cloudflare Workers via the [OpenNext adapter](https://opennext.js.org/cloudflare):
+
+```bash
+npm run deploy   # opennextjs-cloudflare build && opennextjs-cloudflare deploy
+```
+
+The live deployment intentionally has no `ANTHROPIC_API_KEY` set, so it always serves demo data — safe for anyone to open without incurring API cost. To enable live generation on the deployed Worker instead, set the secret before deploying:
+
+```bash
+npx wrangler secret put ANTHROPIC_API_KEY
+```
 
 ## How it works
 
