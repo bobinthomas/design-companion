@@ -5,8 +5,9 @@ import {
   normalizeProbabilities,
   weightedScore,
   type DecisionProvider,
+  type DecisionState,
 } from "@/lib/decision-model/provider";
-import type { DecisionQuestion, DecisionResult, UXState } from "@/lib/schemas";
+import type { DecisionQuestion, DecisionResult } from "@/lib/schemas";
 
 export const JEV_MODEL_ID = "typesafe/jev";
 
@@ -53,7 +54,7 @@ export class JevProvider implements DecisionProvider {
 
   constructor(private readonly transport: JevTransport) {}
 
-  async evaluate(state: UXState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
+  async evaluate(state: DecisionState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
     const keys = questions.map((q) => jevKey(q.id));
     const input = {
       state,

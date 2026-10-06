@@ -20,7 +20,8 @@ export const componentSchema = z.object({
   name: z.string().min(1),
   description: z.string().default(""),
   category: z.enum(["action", "input", "display", "navigation", "feedback", "overlay", "layout"]),
-  capabilities: z.array(capabilityClaimSchema).min(1),
+  // May be empty: an unrecognized component with nothing declared is kept, and reported.
+  capabilities: z.array(capabilityClaimSchema).default([]),
   states: z.array(stateSchema).min(1),
   variants: z.array(kebabIdSchema).default([]),
   props: z.array(componentPropSchema).default([]),

@@ -1,0 +1,78 @@
+{
+  "layout": {
+    "single-page": [],
+    "multi-step": ["step-indicator"],
+    "split-view": [],
+    "dashboard": ["metric-summary"],
+    "detail-view": []
+  },
+  "navigation": {
+    "sidebar": ["sidebar-navigation"],
+    "top-nav": ["top-navigation"],
+    "tabs": ["tab-navigation"],
+    "breadcrumb": ["breadcrumb-trail"],
+    "stepper": ["step-indicator"],
+    "bottom-nav": ["bottom-navigation"],
+    "none": []
+  },
+  "dataPresentation": {
+    "data-table": ["tabular-display", "sorting"],
+    "card-grid": ["card-display"],
+    "list": ["list-display"],
+    "timeline": ["timeline-display"],
+    "kanban": ["kanban-board"],
+    "chart": ["data-visualization"]
+  },
+  "detailView": {
+    "side-panel": ["side-drawer"],
+    "full-page": [],
+    "modal": ["modal-dialog"],
+    "inline-expand": []
+  },
+  "selection": {
+    "checkbox": ["multi-select-checkbox"],
+    "radio": ["single-choice-radio"],
+    "select": ["single-select-dropdown"],
+    "combobox": ["searchable-select"],
+    "segmented-control": ["segmented-choice"],
+    "toggle": ["on-off-toggle"]
+  },
+  "search": {
+    "visible-search": ["search-input"],
+    "global-search": ["search-input"],
+    "none": []
+  },
+  "filtering": {
+    "persistent-filter-bar": ["filter-controls"],
+    "filter-panel": ["filter-controls", "side-drawer"],
+    "saved-views": ["filter-controls", "tab-navigation"],
+    "none": []
+  },
+  "bulkActions": {
+    "bulk-action-bar": ["row-selection", "bulk-action-bar"],
+    "none": []
+  },
+  "pagination": {
+    "paginated": ["pagination"],
+    "infinite-scroll": ["progress-indicator"],
+    "virtualized": ["virtualized-scrolling"],
+    "none": []
+  },
+  "actionConfirmation": {
+    "confirm-dialog": ["destructive-confirmation"],
+    "undo-toast": ["undo-action"],
+    "inline-confirm": ["secondary-action"],
+    "none": []
+  },
+  "statusFeedback": {
+    "toast": ["toast-notification"],
+    "inline-message": ["inline-message"],
+    "alert-banner": ["alert-banner"]
+  },
+  "formStructure": {
+    "single-page-form": ["text-input", "form-validation"],
+    "wizard": ["step-indicator", "form-validation"],
+    "inline-edit": ["text-input"],
+    "none": []
+  }
+}

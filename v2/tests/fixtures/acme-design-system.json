@@ -1,0 +1,61 @@
+{
+  "name": "Acme DS",
+  "version": "2.4.0",
+  "tokens": {
+    "color": {
+      "blue": { "500": { "$value": "#3b82f6", "$type": "color" } },
+      "gray": { "100": "#f3f4f6", "900": "#111827" },
+      "red": { "500": "#ef4444" }
+    },
+    "sys": {
+      "primary": "{color.blue.500}",
+      "danger": "{color.red.500}",
+      "text": "{color.gray.900}",
+      "missing": "{color.purple.500}"
+    },
+    "space": { "sm": "8px", "md": "16px" },
+    "button": {
+      "bg": "{color.blue.500}",
+      "danger-bg": "{sys.danger}"
+    }
+  },
+  "components": [
+    {
+      "name": "Btn",
+      "variants": ["primary", "danger", "ghost", "sparkle"],
+      "states": ["rest", "hovered", "focused", "isDisabled", "busy", "wiggling"],
+      "props": { "onClick": "() => void", "variant": ["primary", "danger", "ghost", "sparkle"] },
+      "tokens": ["button.bg", "button.danger-bg", "color.gray.100"]
+    },
+    {
+      "name": "Table",
+      "states": ["default", "loading", "empty", "error", "populated", "active"],
+      "props": { "columns": "Column[]", "rows": "Row[]", "sortable": "boolean", "onSort": "(key) => void" },
+      "capabilities": [
+        { "capability": "row-selection", "level": "partial", "missing": ["select-all with indeterminate state"] }
+      ]
+    },
+    {
+      "name": "Toast",
+      "states": ["default", "success", "error"]
+    },
+    {
+      "name": "TextInput",
+      "states": ["default", "focused", "disabled", "invalid"]
+    },
+    {
+      "name": "Dropdown",
+      "states": ["default", "focused", "disabled", "invalid"]
+    },
+    {
+      "name": "Tag",
+      "states": ["default"]
+    },
+    {
+      "name": "MagicPanel",
+      "description": "A bespoke panel nobody else has.",
+      "states": ["default"],
+      "capabilities": ["teleportation"]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "confirm-in-dialog",
+    "provides": "destructive-confirmation",
+    "parts": ["modal-dialog", "destructive-action"],
+    "notes": "A modal dialog with a destructive confirm button and a safe cancel."
+  },
+  {
+    "id": "undo-in-toast",
+    "provides": "undo-action",
+    "parts": ["toast-notification", "secondary-action"],
+    "notes": "A toast confirming the action with an Undo button; the action is deferred until the toast closes."
+  },
+  {
+    "id": "selection-toolbar",
+    "provides": "bulk-action-bar",
+    "parts": ["row-selection", "secondary-action"],
+    "notes": "Selection count plus action buttons shown when rows are selected."
+  },
+  {
+    "id": "dropdown-filters",
+    "provides": "filter-controls",
+    "parts": ["single-select-dropdown", "secondary-action"],
+    "notes": "One dropdown per filterable attribute plus a clear-all button."
+  },
+  {
+    "id": "field-with-search-icon",
+    "provides": "search-input",
+    "parts": ["text-input", "icon-action"],
+    "notes": "A text input with a search icon and clear button."
+  },
+  {
+    "id": "message-with-action",
+    "provides": "empty-state-display",
+    "parts": ["inline-message", "primary-action"],
+    "notes": "An explanatory message with a next-step button."
+  }
+]

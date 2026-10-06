@@ -7,8 +7,9 @@ import {
   normalizeProbabilities,
   weightedScore,
   type DecisionProvider,
+  type DecisionState,
 } from "@/lib/decision-model/provider";
-import type { DecisionQuestion, DecisionResult, UXState } from "@/lib/schemas";
+import type { DecisionQuestion, DecisionResult } from "@/lib/schemas";
 
 const SYSTEM_PROMPT = `You are a decision model. You answer typed, atomic questions about a UX problem state.
 
@@ -34,7 +35,7 @@ export class LlmDecisionProvider implements DecisionProvider {
     private readonly generate: typeof generateStructured = generateStructured
   ) {}
 
-  async evaluate(state: UXState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
+  async evaluate(state: DecisionState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
     const { data, model } = await this.generate({
       systemPrompt: SYSTEM_PROMPT,
       userPrompt: buildUserPrompt(state, questions),
@@ -71,7 +72,7 @@ function buildAnswerSchema(questions: readonly DecisionQuestion[]) {
   }>;
 }
 
-function buildUserPrompt(state: UXState, questions: readonly DecisionQuestion[]): string {
+function buildUserPrompt(state: DecisionState, questions: readonly DecisionQuestion[]): string {
   const described = questions.map((q) => ({
     id: q.id,
     type: q.type,

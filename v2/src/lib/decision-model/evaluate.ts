@@ -4,7 +4,11 @@ import { resolveLlmConfig } from "@/lib/ai/generate";
 import { JevProvider, type AiBinding } from "@/lib/decision-model/adapters/jev";
 import { LlmDecisionProvider } from "@/lib/decision-model/adapters/llm";
 import { MockDecisionProvider } from "@/lib/decision-model/adapters/mock";
-import { assertResultsMatch, type DecisionProvider } from "@/lib/decision-model/provider";
+import {
+  assertResultsMatch,
+  type DecisionProvider,
+  type DecisionState,
+} from "@/lib/decision-model/provider";
 import {
   refundQuota,
   tryConsumeQuota,
@@ -17,7 +21,6 @@ import {
   type DecisionProviderId,
   type DecisionQuestion,
   type DecisionResult,
-  type UXState,
 } from "@/lib/schemas";
 
 export interface CloudflareCredentials {
@@ -61,7 +64,7 @@ interface Candidate {
  * provider with a visible notice; the mock never fails, so neither does this.
  */
 export async function evaluateDecisions(
-  state: UXState,
+  state: DecisionState,
   questions: readonly DecisionQuestion[],
   ctx: DecisionContext
 ): Promise<DecisionRun> {

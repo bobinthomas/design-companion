@@ -1,4 +1,10 @@
-import type { DecisionProviderId, DecisionQuestion, DecisionResult, UXState } from "@/lib/schemas";
+import type { DecisionProviderId, DecisionQuestion, DecisionResult } from "@/lib/schemas";
+
+/**
+ * What questions are evaluated against: usually a UXState, but also e.g. a
+ * design-system description for capability mapping (§21e).
+ */
+export type DecisionState = Readonly<Record<string, unknown>>;
 
 /**
  * PRD §6, §33 DecisionProvider. The application's own interface for the
@@ -10,7 +16,7 @@ import type { DecisionProviderId, DecisionQuestion, DecisionResult, UXState } fr
  */
 export interface DecisionProvider {
   readonly id: DecisionProviderId;
-  evaluate(state: UXState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]>;
+  evaluate(state: DecisionState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]>;
 }
 
 /** Normalizes a probability map so it sums to 1 over exactly `keys`. */

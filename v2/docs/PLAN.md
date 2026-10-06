@@ -27,7 +27,7 @@ Implements [PRD.md](PRD.md) v2.2. V2 is a separate Next.js app in `v2/`, deploye
 
 1. **Contracts** ✅ — all PRD §32 schemas + tests, app scaffold, Worker config.
 2. **Decision infrastructure** ✅ — `DecisionProvider` + Jev (binding/REST), LLM and Mock providers; question registry; confidence bands; KV quota; live Jev smoke test.
-3. **Design System Intelligence** — capability vocabulary, composition recipes, default design system JSON, normalizer, capability mapping, resolution + gap detection + gap policy, registry query APIs.
+3. **Design System Intelligence** ✅ — capability vocabulary, composition recipes, default design system JSON, normalizer, capability mapping, resolution + gap detection + gap policy, registry query APIs.
 4. **UX Policy** — rule engine, policy engine, pattern resolver, component resolver. Golden test: expense dashboard via Mock provider.
 5. **Knowledge base** — 30–50 rules, ~30 questions, 14 patterns, 13+ components with claims.
 6. **UX Analyze** — state extraction + editing, questions/results, Decision Inspector, overrides, trace in localStorage.
@@ -45,3 +45,4 @@ Implements [PRD.md](PRD.md) v2.2. V2 is a separate Next.js app in `v2/`, deploye
 
 - **Milestone 2:** Workers AI binding and KV namespace (`JEV_QUOTA`, id `f798c432…`) are configured in `wrangler.jsonc`. The live smoke test reached Jev through the binding; Jev returned `2021: Insufficient AI Gateway credits`, and the request fell back to the mock with visible notices. **Action for the owner:** add Workers AI / AI Gateway credits to the Cloudflare account; no code change needed.
 - Failed binding calls refund the visitor's quota (failures aren't billed).
+- **Milestone 3:** 50 capabilities, 6 composition recipes, decision-option → capability map, normalization alias tables (all versioned in `knowledge/`). The default design system (36 components, tiered tokens) imports through the same pipeline with zero findings. The PRD §21f worked example runs end to end against the `tests/fixtures/acme-design-system.json` fixture, both in tests and live over HTTP.

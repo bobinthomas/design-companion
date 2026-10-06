@@ -1,6 +1,10 @@
 import { noulConfidence } from "@/lib/decision-model/confidence";
-import { normalizeProbabilities, type DecisionProvider } from "@/lib/decision-model/provider";
-import type { DecisionQuestion, DecisionResult, UXState } from "@/lib/schemas";
+import {
+  normalizeProbabilities,
+  type DecisionProvider,
+  type DecisionState,
+} from "@/lib/decision-model/provider";
+import type { DecisionQuestion, DecisionResult } from "@/lib/schemas";
 
 export const MOCK_MODEL_VERSION = "mock-1.0.0";
 
@@ -21,7 +25,7 @@ const SCORE_WINNER = 0.75;
 export class MockDecisionProvider implements DecisionProvider {
   readonly id = "mock" as const;
 
-  async evaluate(state: UXState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
+  async evaluate(state: DecisionState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
     const text = JSON.stringify({ ...state, ambiguities: [] }).toLowerCase();
     return questions.map((q) => answer(q, text));
   }

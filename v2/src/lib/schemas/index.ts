@@ -13,3 +13,4 @@ export * from "./capability-requirement";
 export * from "./design-system-gap";
 export * from "./ux-evaluation";
 export * from "./generation";
+export * from "./design-system-import";

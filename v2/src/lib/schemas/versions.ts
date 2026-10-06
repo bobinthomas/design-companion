@@ -15,6 +15,7 @@ export const knowledgeVersionsSchema = z.object({
   patterns: semverSchema,
   capabilities: semverSchema,
   compositions: semverSchema,
+  normalization: semverSchema,
   designSystem: z.object({ id: z.string(), version: semverSchema }),
   evaluator: semverSchema,
   prompts: semverSchema,
