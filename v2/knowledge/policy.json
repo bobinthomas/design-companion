@@ -1,0 +1,22 @@
+{
+  "confidence": {
+    "proceed": 0.85,
+    "review": 0.65
+  },
+  "noulTrueThreshold": 0.7,
+  "quota": {
+    "jevRequestsPerIpPerDay": 2
+  },
+  "gaps": {
+    "critical": "block",
+    "high": "mark-net-new",
+    "medium": "warn",
+    "low": "warn"
+  },
+  "capabilityMapping": {
+    "maxQuestionsPerImport": 40,
+    "inferredFromName": 0.75,
+    "inferredFromProps": 0.7,
+    "inferredFromNameAndProps": 0.85
+  }
+}

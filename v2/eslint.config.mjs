@@ -14,8 +14,6 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // OpenNext/Cloudflare build output — generated, not source.
     ".open-next/**",
-    // Design Companion V2 is a separate app with its own lint config.
-    "v2/**",
   ]),
 ]);
 

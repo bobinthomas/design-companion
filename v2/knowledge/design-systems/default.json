@@ -1,0 +1,241 @@
+{
+  "id": "default",
+  "name": "Design Companion Default",
+  "version": "1.0.0",
+  "tokens": {
+    "color": {
+      "white": "#ffffff",
+      "zinc": { "50": "#fafafa", "200": "#e4e4e7", "500": "#71717a", "900": "#18181b" },
+      "violet": { "100": "#ede9fe", "600": "#7c3aed", "700": "#6d28d9" },
+      "red": { "600": "#dc2626" },
+      "green": { "600": "#16a34a" },
+      "amber": { "500": "#f59e0b" }
+    },
+    "spacing": { "1": "4px", "2": "8px", "3": "12px", "4": "16px", "6": "24px", "8": "32px" },
+    "radius": { "sm": "4px", "md": "8px", "lg": "12px", "full": "9999px" },
+    "typography": {
+      "family": { "sans": "Geist, system-ui, sans-serif", "mono": "Geist Mono, monospace" },
+      "size": { "sm": "14px", "md": "16px", "lg": "20px" },
+      "weight": { "regular": "400", "medium": "500", "semibold": "600" }
+    },
+    "elevation": { "sm": "0 1px 2px rgba(0,0,0,0.06)", "md": "0 4px 12px rgba(0,0,0,0.10)" },
+    "grid": { "columns": "12", "gutter": "24px", "breakpoint-md": "768px" },
+    "motion": { "duration-fast": "120ms", "duration-base": "200ms", "easing-standard": "cubic-bezier(0.2, 0, 0, 1)" },
+    "semantic": {
+      "primary": "{color.violet.600}",
+      "primary-hover": "{color.violet.700}",
+      "secondary": "{color.zinc.500}",
+      "success": "{color.green.600}",
+      "warning": "{color.amber.500}",
+      "error": "{color.red.600}",
+      "surface": "{color.white}",
+      "surface-muted": "{color.zinc.50}",
+      "text": "{color.zinc.900}",
+      "text-muted": "{color.zinc.500}",
+      "border": "{color.zinc.200}",
+      "focus": "{color.violet.600}"
+    },
+    "button": {
+      "background": "{semantic.primary}",
+      "background-hover": "{semantic.primary-hover}",
+      "destructive-background": "{semantic.error}",
+      "radius": "{radius.md}"
+    },
+    "dialog": { "surface": "{semantic.surface}", "radius": "{radius.lg}", "shadow": "{elevation.md}" },
+    "data-table": { "border": "{semantic.border}", "header-background": "{semantic.surface-muted}" }
+  },
+  "components": [
+    {
+      "name": "Button", "category": "action", "description": "Triggers an action.",
+      "variants": ["primary", "secondary", "destructive", "ghost"],
+      "states": ["default", "hover", "focus", "active", "disabled", "loading"],
+      "props": { "variant": ["primary", "secondary", "destructive", "ghost"], "loading": "boolean", "disabled": "boolean" },
+      "capabilities": ["primary-action", "secondary-action", "destructive-action"],
+      "tokens": ["button.background", "button.background-hover", "button.destructive-background", "button.radius"],
+      "accessibility": ["visible focus indicator", "accessible name"],
+      "usage": { "do": ["Use one primary button per view"], "dont": ["Don't make a destructive button the default focus"] }
+    },
+    {
+      "name": "IconButton", "category": "action", "description": "A compact icon-only action.",
+      "states": ["default", "hover", "focus", "disabled"],
+      "props": { "icon": "string", "label": "string" },
+      "capabilities": ["icon-action"],
+      "accessibility": ["accessible name for icon-only control", "minimum 24px target"]
+    },
+    {
+      "name": "Menu", "category": "action", "description": "A list of actions revealed from a trigger.",
+      "states": ["default", "focus", "active"],
+      "capabilities": ["overflow-menu"]
+    },
+    {
+      "name": "TextField", "category": "input", "description": "Single-line text entry with label and messages.",
+      "states": ["default", "focus", "disabled", "error", "read-only"],
+      "capabilities": ["text-input"]
+    },
+    {
+      "name": "Textarea", "category": "input", "description": "Multi-line text entry.",
+      "states": ["default", "focus", "disabled", "error"],
+      "capabilities": ["long-text-input"]
+    },
+    {
+      "name": "Select", "category": "input", "description": "Choose one option from a list.",
+      "states": ["default", "focus", "disabled", "error"],
+      "capabilities": ["single-select-dropdown"]
+    },
+    {
+      "name": "Combobox", "category": "input", "description": "Type to filter and choose from many options.",
+      "states": ["default", "focus", "disabled", "empty", "loading"],
+      "capabilities": ["searchable-select"]
+    },
+    {
+      "name": "Checkbox", "category": "input", "description": "Independent on/off choices.",
+      "states": ["default", "focus", "selected", "disabled", "partial"],
+      "capabilities": ["multi-select-checkbox"]
+    },
+    {
+      "name": "RadioGroup", "category": "input", "description": "Exactly one choice from a visible set.",
+      "states": ["default", "focus", "selected", "disabled"],
+      "capabilities": ["single-choice-radio"]
+    },
+    {
+      "name": "Switch", "category": "input", "description": "A setting that takes effect immediately.",
+      "states": ["default", "focus", "selected", "disabled"],
+      "capabilities": ["on-off-toggle"]
+    },
+    {
+      "name": "SegmentedControl", "category": "input", "description": "Compact mutually exclusive options.",
+      "states": ["default", "focus", "selected", "disabled"],
+      "capabilities": ["segmented-choice"]
+    },
+    {
+      "name": "DatePicker", "category": "input", "description": "Typed date entry with a calendar.",
+      "states": ["default", "focus", "disabled", "error"],
+      "capabilities": ["date-input"]
+    },
+    {
+      "name": "SearchField", "category": "input", "description": "Query field with clear control.",
+      "states": ["default", "focus", "loading", "empty"],
+      "capabilities": ["search-input"]
+    },
+    {
+      "name": "Form", "category": "layout", "description": "Field layout with validation and error summary.",
+      "states": ["default", "error", "validating", "success"],
+      "capabilities": ["form-validation"]
+    },
+    {
+      "name": "DataTable", "category": "display", "description": "Sortable, selectable table for structured records.",
+      "states": ["default", "hover", "focus", "active", "selected", "disabled", "partial", "loading", "empty", "error", "populated"],
+      "props": { "columns": "Column[]", "rows": "Row[]", "sortable": "boolean", "selectable": "boolean", "rowActions": "Action[]" },
+      "capabilities": ["tabular-display", "sorting", "row-selection", "inline-row-actions"],
+      "tokens": ["data-table.border", "data-table.header-background"],
+      "accessibility": ["table semantics with header associations", "sort state exposed to assistive technology"]
+    },
+    {
+      "name": "Pagination", "category": "navigation", "description": "Page controls with range summary.",
+      "states": ["default", "disabled"],
+      "capabilities": ["pagination"]
+    },
+    {
+      "name": "Card", "category": "display", "description": "A record as a card with optional media.",
+      "states": ["default", "hover", "focus", "loading", "empty", "populated"],
+      "capabilities": ["card-display"]
+    },
+    {
+      "name": "List", "category": "display", "description": "A vertical list of records.",
+      "states": ["default", "loading", "empty", "populated"],
+      "capabilities": ["list-display"]
+    },
+    {
+      "name": "Chart", "category": "display", "description": "Line and bar charts for aggregate values.",
+      "states": ["loading", "empty", "error", "populated"],
+      "capabilities": ["data-visualization"]
+    },
+    {
+      "name": "StatCard", "category": "display", "description": "A headline metric with label and trend.",
+      "states": ["loading", "populated"],
+      "capabilities": ["metric-summary"]
+    },
+    {
+      "name": "Badge", "category": "display", "description": "Compact status label with tones.",
+      "variants": ["neutral", "success", "warning", "error"],
+      "states": ["default"],
+      "capabilities": ["status-badge"]
+    },
+    {
+      "name": "EmptyState", "category": "display", "description": "Explains an empty view with a next step.",
+      "states": ["empty"],
+      "capabilities": ["empty-state-display"]
+    },
+    {
+      "name": "Tabs", "category": "navigation", "description": "Switch between peer views.",
+      "states": ["default", "active", "focus", "disabled"],
+      "capabilities": ["tab-navigation"]
+    },
+    {
+      "name": "SidebarNav", "category": "navigation", "description": "Persistent vertical app navigation.",
+      "states": ["default", "active", "focus"],
+      "capabilities": ["sidebar-navigation"]
+    },
+    {
+      "name": "TopNav", "category": "navigation", "description": "Header navigation.",
+      "states": ["default", "active", "focus"],
+      "capabilities": ["top-navigation"]
+    },
+    {
+      "name": "Breadcrumb", "category": "navigation", "description": "Location in a hierarchy.",
+      "states": ["default"],
+      "capabilities": ["breadcrumb-trail"]
+    },
+    {
+      "name": "Stepper", "category": "navigation", "description": "Progress through ordered steps.",
+      "states": ["default", "active", "success"],
+      "capabilities": ["step-indicator"]
+    },
+    {
+      "name": "Toast", "category": "feedback", "description": "Transient status message with optional action.",
+      "states": ["default", "success", "error"],
+      "capabilities": ["toast-notification"]
+    },
+    {
+      "name": "InlineAlert", "category": "feedback", "description": "Contextual message with tones.",
+      "states": ["default", "success", "error"],
+      "capabilities": ["inline-message"]
+    },
+    {
+      "name": "Banner", "category": "feedback", "description": "Page-level persistent message.",
+      "states": ["default", "error"],
+      "capabilities": ["alert-banner"]
+    },
+    {
+      "name": "Progress", "category": "feedback", "description": "Determinate and indeterminate progress.",
+      "states": ["loading"],
+      "capabilities": ["progress-indicator"]
+    },
+    {
+      "name": "Skeleton", "category": "feedback", "description": "Loading placeholder.",
+      "states": ["loading"],
+      "capabilities": ["loading-skeleton"]
+    },
+    {
+      "name": "Dialog", "category": "overlay", "description": "Modal dialog with focus management.",
+      "states": ["default", "loading"],
+      "capabilities": ["modal-dialog"],
+      "tokens": ["dialog.surface", "dialog.radius", "dialog.shadow"]
+    },
+    {
+      "name": "Drawer", "category": "overlay", "description": "Side panel keeping context visible.",
+      "states": ["default", "loading"],
+      "capabilities": ["side-drawer"]
+    },
+    {
+      "name": "Popover", "category": "overlay", "description": "Anchored interactive overlay.",
+      "states": ["default"],
+      "capabilities": ["popover"]
+    },
+    {
+      "name": "Tooltip", "category": "overlay", "description": "Brief description on hover or focus.",
+      "states": ["default"],
+      "capabilities": ["tooltip"]
+    }
+  ]
+}

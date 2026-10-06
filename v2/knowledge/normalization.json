@@ -1,0 +1,651 @@
+{
+  "components": {
+    "button": {
+      "aliases": [
+        "button",
+        "btn",
+        "primarybutton",
+        "secondarybutton",
+        "actionbutton"
+      ],
+      "capabilities": [
+        "primary-action",
+        "secondary-action"
+      ]
+    },
+    "icon-button": {
+      "aliases": [
+        "iconbutton",
+        "iconbtn"
+      ],
+      "capabilities": [
+        "icon-action"
+      ]
+    },
+    "text-field": {
+      "aliases": [
+        "textfield",
+        "textinput",
+        "input",
+        "textbox"
+      ],
+      "capabilities": [
+        "text-input"
+      ]
+    },
+    "textarea": {
+      "aliases": [
+        "textarea",
+        "multilineinput",
+        "multilinetextfield"
+      ],
+      "capabilities": [
+        "long-text-input"
+      ]
+    },
+    "select": {
+      "aliases": [
+        "select",
+        "dropdown",
+        "selectfield",
+        "picker",
+        "nativeselect"
+      ],
+      "capabilities": [
+        "single-select-dropdown"
+      ]
+    },
+    "combobox": {
+      "aliases": [
+        "combobox",
+        "autocomplete",
+        "typeahead",
+        "searchableselect"
+      ],
+      "capabilities": [
+        "searchable-select"
+      ]
+    },
+    "checkbox": {
+      "aliases": [
+        "checkbox",
+        "check",
+        "checkboxgroup"
+      ],
+      "capabilities": [
+        "multi-select-checkbox"
+      ]
+    },
+    "radio-group": {
+      "aliases": [
+        "radio",
+        "radiogroup",
+        "radiobutton"
+      ],
+      "capabilities": [
+        "single-choice-radio"
+      ]
+    },
+    "switch": {
+      "aliases": [
+        "switch",
+        "toggle",
+        "toggleswitch"
+      ],
+      "capabilities": [
+        "on-off-toggle"
+      ]
+    },
+    "segmented-control": {
+      "aliases": [
+        "segmentedcontrol",
+        "buttongroup",
+        "segmented",
+        "togglegroup"
+      ],
+      "capabilities": [
+        "segmented-choice"
+      ]
+    },
+    "date-picker": {
+      "aliases": [
+        "datepicker",
+        "dateinput",
+        "calendarinput",
+        "datefield"
+      ],
+      "capabilities": [
+        "date-input"
+      ]
+    },
+    "search-field": {
+      "aliases": [
+        "searchfield",
+        "search",
+        "searchinput",
+        "searchbar",
+        "searchbox"
+      ],
+      "capabilities": [
+        "search-input"
+      ]
+    },
+    "data-table": {
+      "aliases": [
+        "table",
+        "datatable",
+        "datagrid",
+        "grid"
+      ],
+      "capabilities": [
+        "tabular-display"
+      ]
+    },
+    "pagination": {
+      "aliases": [
+        "pagination",
+        "pager",
+        "paginator"
+      ],
+      "capabilities": [
+        "pagination"
+      ]
+    },
+    "card": {
+      "aliases": [
+        "card",
+        "tile"
+      ],
+      "capabilities": [
+        "card-display"
+      ]
+    },
+    "list": {
+      "aliases": [
+        "list",
+        "listview",
+        "itemlist"
+      ],
+      "capabilities": [
+        "list-display"
+      ]
+    },
+    "timeline": {
+      "aliases": [
+        "timeline",
+        "activityfeed"
+      ],
+      "capabilities": [
+        "timeline-display"
+      ]
+    },
+    "kanban": {
+      "aliases": [
+        "kanban",
+        "kanbanboard",
+        "board"
+      ],
+      "capabilities": [
+        "kanban-board"
+      ]
+    },
+    "chart": {
+      "aliases": [
+        "chart",
+        "graph",
+        "linechart",
+        "barchart"
+      ],
+      "capabilities": [
+        "data-visualization"
+      ]
+    },
+    "tabs": {
+      "aliases": [
+        "tabs",
+        "tab",
+        "tabbar",
+        "tablist"
+      ],
+      "capabilities": [
+        "tab-navigation"
+      ]
+    },
+    "sidebar-nav": {
+      "aliases": [
+        "sidebar",
+        "sidenav",
+        "sidebarnav",
+        "navrail",
+        "sidenavigation"
+      ],
+      "capabilities": [
+        "sidebar-navigation"
+      ]
+    },
+    "top-nav": {
+      "aliases": [
+        "topnav",
+        "navbar",
+        "appbar",
+        "topbar",
+        "header",
+        "globalheader"
+      ],
+      "capabilities": [
+        "top-navigation"
+      ]
+    },
+    "bottom-nav": {
+      "aliases": [
+        "bottomnav",
+        "bottomnavigation",
+        "tabbarmobile"
+      ],
+      "capabilities": [
+        "bottom-navigation"
+      ]
+    },
+    "breadcrumb": {
+      "aliases": [
+        "breadcrumb",
+        "breadcrumbs"
+      ],
+      "capabilities": [
+        "breadcrumb-trail"
+      ]
+    },
+    "stepper": {
+      "aliases": [
+        "stepper",
+        "steps",
+        "progresssteps",
+        "wizardsteps",
+        "stepindicator"
+      ],
+      "capabilities": [
+        "step-indicator"
+      ]
+    },
+    "badge": {
+      "aliases": [
+        "badge",
+        "tag",
+        "chip",
+        "pill",
+        "statusbadge",
+        "lozenge"
+      ],
+      "capabilities": [
+        "status-badge"
+      ]
+    },
+    "stat-card": {
+      "aliases": [
+        "statcard",
+        "metric",
+        "kpi",
+        "metriccard",
+        "stat"
+      ],
+      "capabilities": [
+        "metric-summary"
+      ]
+    },
+    "toast": {
+      "aliases": [
+        "toast",
+        "snackbar",
+        "notification",
+        "toaster"
+      ],
+      "capabilities": [
+        "toast-notification"
+      ]
+    },
+    "inline-alert": {
+      "aliases": [
+        "inlinealert",
+        "inlinemessage",
+        "callout",
+        "alert",
+        "message"
+      ],
+      "capabilities": [
+        "inline-message"
+      ]
+    },
+    "banner": {
+      "aliases": [
+        "banner",
+        "alertbanner",
+        "pagealert",
+        "globalalert"
+      ],
+      "capabilities": [
+        "alert-banner"
+      ]
+    },
+    "progress": {
+      "aliases": [
+        "progress",
+        "spinner",
+        "loader",
+        "progressbar",
+        "progresscircle"
+      ],
+      "capabilities": [
+        "progress-indicator"
+      ]
+    },
+    "skeleton": {
+      "aliases": [
+        "skeleton",
+        "placeholder",
+        "shimmer"
+      ],
+      "capabilities": [
+        "loading-skeleton"
+      ]
+    },
+    "dialog": {
+      "aliases": [
+        "dialog",
+        "modal",
+        "modaldialog",
+        "alertdialog"
+      ],
+      "capabilities": [
+        "modal-dialog"
+      ]
+    },
+    "drawer": {
+      "aliases": [
+        "drawer",
+        "sheet",
+        "sidepanel",
+        "flyout",
+        "sidesheet"
+      ],
+      "capabilities": [
+        "side-drawer"
+      ]
+    },
+    "popover": {
+      "aliases": [
+        "popover",
+        "popup"
+      ],
+      "capabilities": [
+        "popover"
+      ]
+    },
+    "menu": {
+      "aliases": [
+        "menu",
+        "dropdownmenu",
+        "overflowmenu",
+        "contextmenu",
+        "actionmenu"
+      ],
+      "capabilities": [
+        "overflow-menu"
+      ]
+    },
+    "tooltip": {
+      "aliases": [
+        "tooltip",
+        "hint"
+      ],
+      "capabilities": [
+        "tooltip"
+      ]
+    },
+    "empty-state": {
+      "aliases": [
+        "emptystate",
+        "blankslate",
+        "nodata"
+      ],
+      "capabilities": [
+        "empty-state-display"
+      ]
+    },
+    "bulk-action-bar": {
+      "aliases": [
+        "bulkactionbar",
+        "selectionbar",
+        "batchactionbar",
+        "actionbar"
+      ],
+      "capabilities": [
+        "bulk-action-bar"
+      ]
+    },
+    "form": {
+      "aliases": [
+        "form",
+        "formlayout",
+        "formcontainer"
+      ],
+      "capabilities": [
+        "form-validation"
+      ]
+    }
+  },
+  "variants": {
+    "destructive": {
+      "aliases": [
+        "destructive",
+        "danger",
+        "critical",
+        "negative",
+        "delete"
+      ],
+      "capabilities": [
+        "destructive-action"
+      ]
+    },
+    "primary": {
+      "aliases": [
+        "primary",
+        "main",
+        "cta",
+        "brand",
+        "solid"
+      ]
+    },
+    "secondary": {
+      "aliases": [
+        "secondary",
+        "neutral"
+      ]
+    },
+    "ghost": {
+      "aliases": [
+        "ghost",
+        "tertiary",
+        "subtle",
+        "plain",
+        "text"
+      ]
+    },
+    "outline": {
+      "aliases": [
+        "outline",
+        "outlined",
+        "bordered",
+        "stroke"
+      ]
+    },
+    "link": {
+      "aliases": [
+        "link",
+        "hyperlink"
+      ]
+    },
+    "success": {
+      "aliases": [
+        "success",
+        "positive"
+      ],
+      "capabilities": []
+    },
+    "warning": {
+      "aliases": [
+        "warning",
+        "caution"
+      ],
+      "capabilities": []
+    },
+    "error": {
+      "aliases": [
+        "error"
+      ],
+      "capabilities": []
+    },
+    "info": {
+      "aliases": [
+        "info",
+        "informational"
+      ],
+      "capabilities": []
+    }
+  },
+  "states": {
+    "default": [
+      "default",
+      "rest",
+      "idle",
+      "enabled",
+      "normal"
+    ],
+    "hover": [
+      "hover",
+      "hovered",
+      "onhover",
+      "ishovered"
+    ],
+    "focus": [
+      "focus",
+      "focused",
+      "focusvisible",
+      "isfocused"
+    ],
+    "active": [
+      "active",
+      "pressed",
+      "ispressed",
+      "current"
+    ],
+    "disabled": [
+      "disabled",
+      "isdisabled",
+      "inactive"
+    ],
+    "loading": [
+      "loading",
+      "isloading",
+      "busy",
+      "pending"
+    ],
+    "selected": [
+      "selected",
+      "isselected",
+      "checked",
+      "ischecked",
+      "on"
+    ],
+    "error": [
+      "error",
+      "invalid",
+      "haserror",
+      "iserror"
+    ],
+    "empty": [
+      "empty",
+      "nodata",
+      "blank",
+      "noresults"
+    ],
+    "read-only": [
+      "readonly",
+      "isreadonly"
+    ],
+    "success": [
+      "success",
+      "valid",
+      "complete",
+      "completed"
+    ],
+    "populated": [
+      "populated",
+      "filled",
+      "withdata",
+      "loaded"
+    ],
+    "partial": [
+      "partial",
+      "indeterminate",
+      "mixed"
+    ],
+    "permission-restricted": [
+      "restricted",
+      "forbidden",
+      "nopermission",
+      "unauthorized",
+      "permissionrestricted"
+    ],
+    "validating": [
+      "validating",
+      "checking"
+    ]
+  },
+  "props": {
+    "row-selection": [
+      "selectable",
+      "rowselection",
+      "selection",
+      "selectedrows",
+      "onselectionchange",
+      "selectedkeys",
+      "onrowselect"
+    ],
+    "sorting": [
+      "sortable",
+      "onsort",
+      "sortby",
+      "sortdirection",
+      "sortdescriptor",
+      "onsortchange"
+    ],
+    "pagination": [
+      "pagesize",
+      "paginated",
+      "onpagechange",
+      "totalpages",
+      "page"
+    ],
+    "virtualized-scrolling": [
+      "virtualized",
+      "virtual",
+      "windowing",
+      "overscan"
+    ],
+    "column-customization": [
+      "columnvisibility",
+      "resizablecolumns",
+      "columnorder",
+      "oncolumnschange"
+    ],
+    "inline-row-actions": [
+      "rowactions",
+      "renderrowactions"
+    ],
+    "undo-action": [
+      "onundo",
+      "undo",
+      "undoable"
+    ]
+  }
+}

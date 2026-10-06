@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "design-companion-v2",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-17",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  // Workers AI, for the Jev decision model (typesafe/jev). Always runs
+  // remotely — local dev makes real (very small) billed calls.
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+  "kv_namespaces": [
+    {
+      // Per-IP daily quota for the shared Jev binding (soft limit).
+      "binding": "JEV_QUOTA",
+      "id": "f798c432b66e46a7a3681912d267fbc8"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
