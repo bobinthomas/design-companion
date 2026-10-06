@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import acmeJson from "../fixtures/acme-design-system.json";
+import acmeJson from "@knowledge/design-systems/acme-example.json";
 import type { generateStructured } from "@/lib/ai/generate";
 import { importDesignSystem } from "@/lib/design-system/import";
 import { analyzeState, UnknownResultsError } from "@/lib/ux/analyze";

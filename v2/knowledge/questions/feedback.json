@@ -1,0 +1,77 @@
+[
+  {
+    "id": "fb.blocks-task",
+    "purpose": "feedback",
+    "category": "impact",
+    "type": "noul",
+    "question": "Does this stop users from finishing what they came to do?",
+    "instructions": "Using the issue's summary and evidence, decide whether the problem prevents users from completing their task (they give up, get stuck, or need help), rather than only slowing or annoying them.",
+    "criteria": { "true": "Users get stuck, give up or need help to finish", "false": "Users can still finish, even if slower or annoyed" },
+    "mock": { "keywords": { "true": ["gave up", "give up", "stuck", "impossible", "couldn't finish", "had to ask", "blocked", "can't complete"] }, "default": "false" }
+  },
+  {
+    "id": "fb.frequent",
+    "purpose": "feedback",
+    "category": "impact",
+    "type": "noul",
+    "question": "Does it affect something users do often?",
+    "instructions": "Decide whether the issue occurs in a task or moment users go through frequently (daily, every session, every time they use a feature), rather than a rare or one-off situation.",
+    "criteria": { "true": "It happens in a frequent task or every session", "false": "It happens rarely or once" },
+    "mock": { "keywords": { "true": ["every day", "daily", "always", "every time", "each time", "constantly", "all the time", "every week", "a week", "a day", "per week", "per day", "each week"] }, "default": "false" }
+  },
+  {
+    "id": "fb.discoverability",
+    "purpose": "feedback",
+    "category": "cause",
+    "type": "noul",
+    "question": "Is the problem that users can't find something?",
+    "instructions": "Decide whether the core of the issue is that users cannot find or don't notice a feature, action or piece of information that exists.",
+    "criteria": { "true": "Users can't find or don't notice something that exists", "false": "Finding things isn't the problem" },
+    "mock": { "keywords": { "true": ["can't find", "couldn't find", "where is", "hidden", "hard to find", "didn't see", "didn't notice", "took ages to find", "buried"] }, "default": "false" }
+  },
+  {
+    "id": "fb.comprehension",
+    "purpose": "feedback",
+    "category": "cause",
+    "type": "noul",
+    "question": "Do users misunderstand what something means or does?",
+    "instructions": "Decide whether users misread labels, terms, numbers or states, or expect something to do something other than what it does.",
+    "criteria": { "true": "Users misunderstand meaning or behaviour", "false": "Users understand it; the problem is elsewhere" },
+    "mock": { "keywords": { "true": ["confus", "didn't understand", "what does", "unclear", "meaning", "not sure what", "thought it would", "misleading"] }, "default": "false" }
+  },
+  {
+    "id": "fb.recoverable",
+    "purpose": "feedback",
+    "category": "impact",
+    "type": "noul",
+    "question": "Can users recover on their own?",
+    "instructions": "Decide whether users can undo the mistake or get back on track by themselves, without losing work or needing support.",
+    "criteria": { "true": "Users can undo it or get back on track themselves", "false": "Work is lost, or users need help to recover" },
+    "mock": { "keywords": { "false": ["lost", "deleted", "can't undo", "no way back", "start over", "started over", "had to call", "contact support"] }, "default": "true" }
+  },
+  {
+    "id": "fb.trust",
+    "purpose": "feedback",
+    "category": "impact",
+    "type": "noul",
+    "question": "Does it make users doubt whether things worked or are safe?",
+    "instructions": "Decide whether the issue leaves users unsure whether an action succeeded, worried about consequences, or less willing to trust the product.",
+    "criteria": { "true": "Users are unsure, worried or lose trust", "false": "Trust and certainty aren't affected" },
+    "mock": { "keywords": { "true": ["worried", "scared", "nervous", "did it work", "not sure if", "charged twice", "lost", "don't trust", "afraid"] }, "default": "false" }
+  },
+  {
+    "id": "fb.severity",
+    "purpose": "feedback",
+    "category": "impact",
+    "type": "score",
+    "question": "How severe is the issue for the people affected?",
+    "instructions": "Rate the severity of the issue for the people who hit it, from the evidence.",
+    "criteria": [
+      "Cosmetic: noticed, but no effect on the task",
+      "Minor: slows users down or annoys them",
+      "Major: significant difficulty, errors or frustration",
+      "Blocking: users can't complete the task or lose work"
+    ],
+    "mock": { "keywords": { "3": ["gave up", "impossible", "lost", "deleted"], "2": ["can't", "couldn't", "stuck", "frustrat", "confus", "annoying"], "0": ["minor", "small thing", "nitpick", "cosmetic"] }, "default": "1" }
+  }
+]

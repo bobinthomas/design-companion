@@ -1,0 +1,54 @@
+[
+  {
+    "id": "copy.action.destructive",
+    "purpose": "copy",
+    "category": "action-risk",
+    "type": "noul",
+    "question": "Does this action destroy, reject or lose something?",
+    "instructions": "Using the problem and the action's description, decide whether performing this action deletes, rejects, cancels or otherwise loses something users or other people would not want lost by mistake.",
+    "criteria": {
+      "true": "The action deletes, rejects, cancels or loses something",
+      "false": "The action creates, confirms, moves or exports something without loss"
+    },
+    "mock": { "keywords": { "true": ["reject", "delete", "remove", "cancel", "archive", "discard", "revoke", "deactivate"] }, "default": "false" }
+  },
+  {
+    "id": "copy.action.reversible",
+    "purpose": "copy",
+    "category": "action-risk",
+    "type": "noul",
+    "question": "Can this action be undone easily?",
+    "instructions": "Decide whether the effect of this action can be reversed by the user shortly afterwards, without help from anyone else and without side effects already having happened (such as notifications sent or payments made).",
+    "criteria": {
+      "true": "The user can undo it shortly afterwards with no lasting side effects",
+      "false": "It can't be undone, or undoing it needs others or leaves side effects"
+    },
+    "mock": { "keywords": { "true": ["undo", "can be undone", "restore", "reversible", "draft"], "false": ["must resubmit", "notif", "email", "payment", "credit card", "permanent"] }, "default": "true" }
+  },
+  {
+    "id": "copy.action.notifies-others",
+    "purpose": "copy",
+    "category": "action-risk",
+    "type": "noul",
+    "question": "Does this action affect or notify other people?",
+    "instructions": "Decide whether this action has a consequence for someone other than the user performing it: they are notified, must act, or are charged or paid.",
+    "criteria": {
+      "true": "Someone else is notified, must act, or is affected",
+      "false": "Only the user performing it is affected"
+    },
+    "mock": { "keywords": { "true": ["employee", "must resubmit", "notif", "email", "for finance", "team", "customer"] }, "default": "false" }
+  },
+  {
+    "id": "copy.action.costs-money",
+    "purpose": "copy",
+    "category": "action-risk",
+    "type": "noul",
+    "question": "Does this action charge or commit money?",
+    "instructions": "Decide whether performing this action charges a payment method, starts a paid plan, or commits the user or organisation to spend money.",
+    "criteria": {
+      "true": "It charges, starts paying, or commits money",
+      "false": "No money is charged or committed"
+    },
+    "mock": { "keywords": { "true": ["paid", "payment", "credit card", "charge", "purchase", "subscription", "reimbursement"] }, "default": "false" }
+  }
+]

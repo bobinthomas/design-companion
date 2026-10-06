@@ -11,7 +11,7 @@ import { decisionTypeSchema, dottedIdSchema, kebabIdSchema } from "./vocabulary"
 const questionBase = {
   id: dottedIdSchema,
   /** What the question is for; analysis questions feed UX policy. */
-  purpose: z.enum(["analysis", "evaluation", "capability-mapping"]),
+  purpose: z.enum(["analysis", "evaluation", "capability-mapping", "copy", "feedback"]),
   category: kebabIdSchema,
   /** Short, human-facing phrasing shown in the Decision Inspector. */
   question: z.string().min(1),

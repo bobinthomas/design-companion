@@ -1,13 +1,20 @@
 "use client";
 
 import { loadCloudflareSettings, loadSettings } from "@/lib/ai/clientSettings";
+import { activeDesignSystem } from "@/lib/design-system/client-storage";
 import type { AnalysisResponse } from "@/lib/ux/analyze";
 import type { StateExtraction } from "@/lib/ux/state/extract";
 import type { AnalysisSession } from "@/lib/session/session";
 import type { EvaluationRun, EvaluationSubjectInput, LayoutBrainstorm } from "@/lib/schemas";
 
+/** The active imported design system, when one is chosen; the server defaults to the bundled one. */
+function designSystem() {
+  const ds = activeDesignSystem();
+  return ds ? { designSystem: ds } : {};
+}
+
 /** Credentials saved in Settings, attached to every request that may use them. */
-function credentials() {
+export function credentials() {
   const llm = loadSettings();
   const cloudflare = loadCloudflareSettings();
   return {
@@ -16,7 +23,7 @@ function credentials() {
   };
 }
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+export async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -47,6 +54,7 @@ export async function requestAnalysis(session: AnalysisSession, fresh: boolean) 
     ...(fresh || !session.results ? {} : { results: session.results }),
     overrides: session.overrides,
     gapSettlements: session.gapSettlements,
+    ...designSystem(),
   });
   return {
     results: a.results,
@@ -76,6 +84,7 @@ export function requestLayouts(session: AnalysisSession, instruction?: string): 
     results: session.results,
     overrides: session.overrides,
     gapSettlements: session.gapSettlements,
+    ...designSystem(),
     ...(instruction?.trim() ? { instruction: instruction.trim() } : {}),
   });
 }
@@ -88,6 +97,7 @@ export function requestEvaluation(session: AnalysisSession, subjects: Evaluation
     results: session.results,
     overrides: session.overrides,
     gapSettlements: session.gapSettlements,
+    ...designSystem(),
     subjects,
   });
 }

@@ -15,3 +15,5 @@ export * from "./ux-evaluation";
 export * from "./generation";
 export * from "./design-system-import";
 export * from "./policy-outcome";
+export * from "./copy";
+export * from "./feedback";

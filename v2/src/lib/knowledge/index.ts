@@ -4,6 +4,10 @@ import policyJson from "@knowledge/policy.json";
 import analysisQuestionsJson from "@knowledge/questions/analysis.json";
 import evaluationQuestionsJson from "@knowledge/questions/evaluation.json";
 import evaluatorJson from "@knowledge/evaluator.json";
+import copyQuestionsJson from "@knowledge/questions/copy.json";
+import copyGuidelinesJson from "@knowledge/copy-guidelines.json";
+import feedbackQuestionsJson from "@knowledge/questions/feedback.json";
+import feedbackKnowledgeJson from "@knowledge/feedback-rules.json";
 import capabilitiesJson from "@knowledge/capabilities.json";
 import compositionsJson from "@knowledge/compositions.json";
 import decisionCapabilitiesJson from "@knowledge/decision-capabilities.json";
@@ -23,10 +27,15 @@ import tablesRulesJson from "@knowledge/ux-rules/tables.json";
 import {
   capabilityDefinitionSchema,
   compositionRecipeSchema,
+  COPY_SLOT_KINDS,
+  copySlotKindSchema,
   DECISION_OPTIONS,
   decisionQuestionSchema,
   EVALUATION_CATEGORIES,
   evaluationCategorySchema,
+  FEEDBACK_ISSUE_KINDS,
+  feedbackIssueKindSchema,
+  feedbackRuleSchema,
   type EvaluationCategory,
   kebabIdSchema,
   semverSchema,
@@ -57,6 +66,8 @@ const manifestSchema = z.object({
   normalization: semverSchema,
   evaluator: semverSchema,
   prompts: semverSchema,
+  copyGuidelines: semverSchema,
+  feedbackRules: semverSchema,
 });
 
 const probability = z.number().min(0).max(1);
@@ -233,3 +244,81 @@ export const evaluatorConfigSchema = z
   });
 
 export const EVALUATOR = evaluatorConfigSchema.parse(evaluatorJson);
+
+/** PRD §24: per-action risk questions, asked once per action in one batched request. */
+export const COPY_QUESTIONS: readonly DecisionQuestion[] = z
+  .array(decisionQuestionSchema)
+  .parse(copyQuestionsJson)
+  .map((q) => {
+    if (q.purpose !== "copy" || q.type !== "noul") throw new Error(`${q.id}: copy questions are noul with purpose "copy"`);
+    return q;
+  });
+
+const guidelineCheckSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("forbidExact"), values: z.array(z.string().min(1)).min(1) }),
+  z.object({ type: z.literal("forbidPhrase"), values: z.array(z.string().min(1)).min(1) }),
+  z.object({ type: z.literal("includesActionVerb") }),
+  z.object({ type: z.literal("mustMentionWhen"), when: z.enum(["irreversible", "bulk"]), values: z.array(z.string().min(1)).min(1) }),
+  z.object({ type: z.literal("maxChars") }),
+]);
+
+export const copyGuidelineSchema = z.object({
+  id: z.string().regex(/^copy\.[a-z0-9-]+$/),
+  code: z.string().regex(/^[A-Z][A-Z0-9_]*$/),
+  appliesTo: z.array(z.union([copySlotKindSchema, z.literal("*")])).min(1),
+  severity: z.enum(["error", "warning"]),
+  text: z.string().min(1),
+  check: guidelineCheckSchema.optional(),
+  source: z.string().optional(),
+});
+
+export const copyGuidelinesSchema = z
+  .object({
+    slots: z.record(copySlotKindSchema, z.object({ label: z.string().min(1), maxChars: z.number().int().positive() })),
+    guidelines: z.array(copyGuidelineSchema).min(1),
+  })
+  .superRefine((g, ctx) => {
+    for (const kind of COPY_SLOT_KINDS) if (!g.slots[kind]) ctx.addIssue({ code: "custom", message: `copy-guidelines.slots is missing ${kind}` });
+    const ids = g.guidelines.map((x) => x.id);
+    if (new Set(ids).size !== ids.length) ctx.addIssue({ code: "custom", message: "copy guideline ids must be unique" });
+  });
+
+export type CopyGuideline = z.infer<typeof copyGuidelineSchema>;
+export const COPY_GUIDELINES = copyGuidelinesSchema.parse(copyGuidelinesJson);
+
+/** PRD §25: per-issue questions, asked once per issue in one batched request. */
+export const FEEDBACK_QUESTIONS: readonly DecisionQuestion[] = z
+  .array(decisionQuestionSchema)
+  .parse(feedbackQuestionsJson)
+  .map((q) => {
+    if (q.purpose !== "feedback") throw new Error(`${q.id}: purpose must be "feedback"`);
+    return q;
+  });
+
+const feedbackKnowledgeSchema = z
+  .object({
+    kinds: z.record(feedbackIssueKindSchema, z.object({ label: z.string().min(1), keywords: z.array(z.string()) })),
+    positiveKeywords: z.array(z.string().min(1)),
+    rules: z.array(feedbackRuleSchema).min(1),
+  })
+  .superRefine((k, ctx) => {
+    const questions = new Map(FEEDBACK_QUESTIONS.map((q) => [q.id, q]));
+    const ruleCodes = new Set(UX_RULES.map((r) => r.code));
+    for (const kind of FEEDBACK_ISSUE_KINDS) if (!k.kinds[kind]) ctx.addIssue({ code: "custom", message: `feedback kinds is missing ${kind}` });
+    for (const rule of k.rules) {
+      for (const c of [...(rule.when.all ?? []), ...(rule.when.any ?? []), ...(rule.when.none ?? [])]) {
+        if ("fact" in c) ctx.addIssue({ code: "custom", message: `${rule.id}: feedback rules can't use facts` });
+        else {
+          const q = questions.get(c.question);
+          if (!q) ctx.addIssue({ code: "custom", message: `${rule.id}: unknown question ${c.question}` });
+          else if (("is" in c && q.type !== "noul") || (("scoreGte" in c || "scoreLte" in c) && q.type !== "score")) {
+            ctx.addIssue({ code: "custom", message: `${rule.id}: ${c.question} has the wrong type for its condition` });
+          }
+        }
+      }
+      for (const cap of rule.capabilities) if (!CAPABILITY_BY_ID.has(cap)) ctx.addIssue({ code: "custom", message: `${rule.id}: unknown capability ${cap}` });
+      for (const code of rule.relatedRules) if (!ruleCodes.has(code)) ctx.addIssue({ code: "custom", message: `${rule.id}: unknown UX rule ${code}` });
+    }
+  });
+
+export const FEEDBACK_KNOWLEDGE = feedbackKnowledgeSchema.parse(feedbackKnowledgeJson);

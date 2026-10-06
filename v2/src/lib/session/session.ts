@@ -1,12 +1,14 @@
 import { z } from "zod";
 import {
   decisionResultSchema,
+  copyRunSchema,
   decisionTypeSchema,
   evaluationRunSchema,
   gapResolutionKindSchema,
   layoutBrainstormSchema,
   policyOutcomeSchema,
   uxStateSchema,
+  type CopyRun,
   type DecisionType,
   type EvaluationRun,
   type LayoutBrainstorm,
@@ -22,6 +24,7 @@ import {
 export const SESSION_VERSION = 1;
 const MAX_LAYOUT_RUNS = 5;
 const MAX_EVALUATION_RUNS = 5;
+const MAX_COPY_RUNS = 5;
 
 const timestamp = z.iso.datetime();
 
@@ -39,6 +42,7 @@ export const sessionEventSchema = z.object({
     "gap-reopened",
     "layouts-generated",
     "evaluated",
+    "copy-generated",
   ]),
   detail: z.string(),
 });
@@ -80,6 +84,8 @@ export const analysisSessionSchema = z.object({
   layouts: z.array(layoutBrainstormSchema).default([]),
   /** UX evaluations, newest first (at most MAX_EVALUATION_RUNS). */
   evaluations: z.array(evaluationRunSchema).default([]),
+  /** UI Copy runs, newest first (at most MAX_COPY_RUNS). */
+  copy: z.array(copyRunSchema).default([]),
   events: z.array(sessionEventSchema),
 });
 
@@ -111,6 +117,7 @@ export function createSession(brief: string, id: string = crypto.randomUUID(), a
     gapSettlements: [],
     layouts: [],
     evaluations: [],
+    copy: [],
     events: [{ at, type: "created", detail: brief }],
   };
 }
@@ -133,6 +140,7 @@ export function withState(
     gapSettlements: [],
     layouts: [],
     evaluations: [],
+    copy: [],
   };
   return source.kind === "edited"
     ? touch(next, "state-edited", "Designer edited the UX state; earlier decisions were cleared.")
@@ -214,6 +222,15 @@ export function withEvaluation(session: AnalysisSession, run: EvaluationRun): An
   );
 }
 
+export function withCopy(session: AnalysisSession, run: CopyRun): AnalysisSession {
+  const errors = run.lint.filter((l) => l.severity === "error").length;
+  return touch(
+    { ...session, copy: [run, ...session.copy.filter((r) => r.id !== run.id)].slice(0, MAX_COPY_RUNS) },
+    "copy-generated",
+    `${run.slots.length} strings for ${run.targets.length} targets in a "${run.tone}" tone via ${run.model}; ${errors} guideline errors, ${run.lint.length - errors} warnings`
+  );
+}
+
 /** True when the decisions changed since a run was made against them. */
 export function decisionsChangedSince(session: AnalysisSession, basedOn: readonly { decision: string; choice: string }[]): boolean {
   const current = session.outcome?.decisions ?? [];
@@ -224,6 +241,12 @@ export function decisionsChangedSince(session: AnalysisSession, basedOn: readonl
 /** True when the decisions changed since the directions were generated. */
 export function layoutsStale(session: AnalysisSession, run: LayoutBrainstorm): boolean {
   return decisionsChangedSince(session, run.basedOn);
+}
+
+/** Title plus when it was last changed, so analyses of the same product can be told apart. */
+export function sessionLabel(session: AnalysisSession): string {
+  const at = new Date(session.updatedAt);
+  return `${sessionTitle(session)} · ${at.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${at.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 /** A short label for session lists. */

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import acmeJson from "../fixtures/acme-design-system.json";
+import acmeJson from "@knowledge/design-systems/acme-example.json";
 import { MockDecisionProvider } from "@/lib/decision-model/adapters/mock";
 import { importDesignSystem } from "@/lib/design-system/import";
 import { ANALYSIS_QUESTIONS } from "@/lib/knowledge";

@@ -1,4 +1,5 @@
 import { ANALYSIS_QUESTIONS, EVALUATION_QUESTIONS, EVALUATOR, evaluationCategoryOf, KNOWLEDGE_VERSIONS, UX_PATTERNS, UX_RULES } from "@/lib/knowledge";
+import { extraKnowledgeSections } from "@/lib/knowledge/extra-sections";
 import { renderPattern, renderRule } from "@/lib/ux/rules/dsl";
 import { EVALUATION_CATEGORY_LABELS, RULE_CATEGORIES, RULE_TIERS } from "@/lib/schemas";
 
@@ -75,5 +76,10 @@ export function renderKnowledgeDoc(): string {
     );
   }
   out.push("");
+
+  for (const section of extraKnowledgeSections()) {
+    out.push(`## ${section.label} (${section.version})`, "", section.description, "");
+    for (const e of section.entries) out.push(`### ${e.title} \`${e.id}\``, "", fence(e.body), "");
+  }
   return out.join("\n");
 }

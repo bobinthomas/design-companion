@@ -31,6 +31,11 @@ export const NAV_ITEMS: NavItem[] = [
     description: "Turn raw research feedback into UX issues and rule-backed recommended changes.",
   },
   {
+    href: "/design-system",
+    label: "Design System",
+    description: "Import your design system, review its capability mapping, and see what it can and can't build.",
+  },
+  {
     href: "/knowledge",
     label: "Knowledge",
     description: "Browse the UX rules, patterns and components every decision is built from.",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import acmeJson from "../fixtures/acme-design-system.json";
+import acmeJson from "@knowledge/design-systems/acme-example.json";
 import {
   applyDesignerReview,
   applyMappingResults,

@@ -19,7 +19,7 @@ import {
   isAccepted,
   removeOverride,
   reopenGap,
-  sessionTitle,
+  sessionLabel,
   settleGap,
   withAnalysis,
   withEvaluation,
@@ -120,7 +120,7 @@ export default function AnalyzePage() {
               <option value="">New analysis</option>
               {sessions.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {sessionTitle(s)}
+                  {sessionLabel(s)}
                 </option>
               ))}
             </select>

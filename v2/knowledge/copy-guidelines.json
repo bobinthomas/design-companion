@@ -1,0 +1,131 @@
+{
+  "slots": {
+    "button": { "label": "Button label", "maxChars": 24 },
+    "dialog-title": { "label": "Confirmation title", "maxChars": 60 },
+    "dialog-body": { "label": "Confirmation message", "maxChars": 200 },
+    "dialog-confirm": { "label": "Confirm button", "maxChars": 24 },
+    "dialog-cancel": { "label": "Cancel button", "maxChars": 24 },
+    "inline-confirm": { "label": "Inline confirmation prompt", "maxChars": 60 },
+    "undo-message": { "label": "Done message with undo", "maxChars": 60 },
+    "undo-action": { "label": "Undo label", "maxChars": 12 },
+    "success": { "label": "Success message", "maxChars": 80 },
+    "error": { "label": "Error message", "maxChars": 160 },
+    "screen-title": { "label": "Screen title", "maxChars": 40 },
+    "empty-heading": { "label": "Empty state heading", "maxChars": 40 },
+    "empty-body": { "label": "Empty state message", "maxChars": 140 },
+    "empty-action": { "label": "Empty state action", "maxChars": 24 },
+    "error-state-heading": { "label": "Error state heading", "maxChars": 40 },
+    "error-state-body": { "label": "Error state message", "maxChars": 160 },
+    "error-state-action": { "label": "Retry action", "maxChars": 24 },
+    "loading": { "label": "Loading label", "maxChars": 40 }
+  },
+  "guidelines": [
+    {
+      "id": "copy.verb-object",
+      "code": "VERB_OBJECT_BUTTONS",
+      "appliesTo": ["button", "dialog-confirm", "empty-action", "error-state-action"],
+      "severity": "warning",
+      "text": "Buttons start with a verb that says what happens, and name the object when it isn't obvious.",
+      "source": "NN/g, writing for interfaces"
+    },
+    {
+      "id": "copy.confirm-names-action",
+      "code": "CONFIRM_NAMES_ACTION",
+      "appliesTo": ["dialog-confirm"],
+      "severity": "error",
+      "text": "A confirm button repeats the action's verb (\"Reject report\"), never OK, Yes, Confirm or Continue, so the choice is clear without reading the message.",
+      "check": { "type": "forbidExact", "values": ["ok", "okay", "yes", "confirm", "continue", "submit", "sure", "proceed"] },
+      "source": "Nielsen heuristic 5 (error prevention); NN/g confirmation dialogs"
+    },
+    {
+      "id": "copy.confirm-includes-verb",
+      "code": "CONFIRM_INCLUDES_VERB",
+      "appliesTo": ["dialog-confirm"],
+      "severity": "error",
+      "text": "The confirm button contains the action's own verb.",
+      "check": { "type": "includesActionVerb" },
+      "source": "NN/g confirmation dialogs"
+    },
+    {
+      "id": "copy.cancel-is-safe",
+      "code": "CANCEL_IS_SAFE",
+      "appliesTo": ["dialog-cancel"],
+      "severity": "error",
+      "text": "The cancel button says what staying safe means (\"Cancel\", \"Keep report\"), never No.",
+      "check": { "type": "forbidExact", "values": ["no", "nope"] },
+      "source": "NN/g confirmation dialogs"
+    },
+    {
+      "id": "copy.no-are-you-sure",
+      "code": "NO_ARE_YOU_SURE",
+      "appliesTo": ["dialog-title", "inline-confirm"],
+      "severity": "warning",
+      "text": "Ask about the specific action (\"Reject this report?\") rather than \"Are you sure?\".",
+      "check": { "type": "forbidPhrase", "values": ["are you sure"] },
+      "source": "NN/g confirmation dialogs"
+    },
+    {
+      "id": "copy.consequence-stated",
+      "code": "STATE_THE_CONSEQUENCE",
+      "appliesTo": ["dialog-body"],
+      "severity": "warning",
+      "text": "Say what will happen, who is affected, and whether it can be undone."
+    },
+    {
+      "id": "copy.irreversible-said",
+      "code": "SAY_IRREVERSIBLE",
+      "appliesTo": ["dialog-body"],
+      "severity": "error",
+      "text": "When the action can't be undone, the message says so.",
+      "check": { "type": "mustMentionWhen", "when": "irreversible", "values": ["can't be undone", "cannot be undone", "can not be undone", "permanent", "can't undo", "cannot undo", "can't reverse", "cannot reverse"] },
+      "source": "WCAG 3.3.4 (error prevention)"
+    },
+    {
+      "id": "copy.errors-explain-and-fix",
+      "code": "ERRORS_EXPLAIN_AND_FIX",
+      "appliesTo": ["error", "error-state-body"],
+      "severity": "warning",
+      "text": "Errors say what went wrong in plain words and how to fix it; no codes, no blame.",
+      "source": "Nielsen heuristic 9; WCAG 3.3.3"
+    },
+    {
+      "id": "copy.no-cute-errors",
+      "code": "NO_CUTE_ERRORS",
+      "appliesTo": ["error", "error-state-heading", "error-state-body"],
+      "severity": "warning",
+      "text": "Errors stay calm and plain: no \"Oops\", no exclamation marks.",
+      "check": { "type": "forbidPhrase", "values": ["oops", "whoops", "uh oh", "!"] },
+      "source": "Mailchimp content style guide"
+    },
+    {
+      "id": "copy.bulk-count",
+      "code": "BULK_COUNT",
+      "appliesTo": ["success", "undo-message", "dialog-title"],
+      "severity": "error",
+      "text": "Messages for actions that apply to many items show the count, using the {count} placeholder.",
+      "check": { "type": "mustMentionWhen", "when": "bulk", "values": ["{count}"] }
+    },
+    {
+      "id": "copy.money-explicit",
+      "code": "MONEY_EXPLICIT",
+      "appliesTo": ["button", "dialog-body"],
+      "severity": "warning",
+      "text": "Actions that charge money say so plainly, with the amount where known ({amount})."
+    },
+    {
+      "id": "copy.empty-guides",
+      "code": "EMPTY_STATES_GUIDE",
+      "appliesTo": ["empty-heading", "empty-body", "empty-action"],
+      "severity": "warning",
+      "text": "Empty states explain why it's empty and what to do next, with one clear action."
+    },
+    {
+      "id": "copy.length",
+      "code": "FIT_THE_SPACE",
+      "appliesTo": ["*"],
+      "severity": "error",
+      "text": "Each string fits its slot's character limit.",
+      "check": { "type": "maxChars" }
+    }
+  ]
+}

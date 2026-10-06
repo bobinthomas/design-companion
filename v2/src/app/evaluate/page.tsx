@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CompareTable, EVALUATION_QUESTION_COUNT, EvaluationReport, RunMeta } from "@/components/evaluate/EvaluationReport";
 import { requestEvaluation } from "@/lib/client/api";
 import { card, humanize, inputClass, primaryButton, secondaryButton, sectionTitle } from "@/lib/client/format";
-import { decisionsChangedSince, sessionTitle, withEvaluation, type AnalysisSession } from "@/lib/session/session";
+import { decisionsChangedSince, sessionLabel, withEvaluation, type AnalysisSession } from "@/lib/session/session";
 import { loadSessions, saveSession } from "@/lib/session/storage";
 
 interface Draft {
@@ -103,7 +103,7 @@ export default function EvaluatePage() {
             >
               {sessions.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {sessionTitle(s)} · {s.outcome!.decisions.length} decisions
+                  {sessionLabel(s)} · {s.outcome!.decisions.length} decisions
                 </option>
               ))}
             </select>

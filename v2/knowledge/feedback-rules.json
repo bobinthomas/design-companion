@@ -1,0 +1,124 @@
+{
+  "kinds": {
+    "discoverability": { "label": "Hard to find", "keywords": ["can't find", "couldn't find", "where is", "hidden", "hard to find", "didn't see", "didn't notice", "buried"] },
+    "efficiency": { "label": "Too slow or too many steps", "keywords": ["too many clicks", "too many steps", "takes forever", "tedious", "one by one", "slow to", "repetitive", "again and again"] },
+    "comprehension": { "label": "Confusing", "keywords": ["confus", "didn't understand", "what does", "unclear", "not sure what", "misleading", "thought it would"] },
+    "error-recovery": { "label": "Mistakes are hard to undo", "keywords": ["lost", "deleted", "can't undo", "no way back", "start over", "started over", "by accident", "accidentally"] },
+    "feedback": { "label": "Not sure it worked", "keywords": ["did it work", "no confirmation", "nothing happened", "not sure if", "didn't know if", "spinner"] },
+    "trust": { "label": "Worry and trust", "keywords": ["worried", "scared", "nervous", "don't trust", "afraid", "charged twice", "privacy"] },
+    "performance": { "label": "Slow to load", "keywords": ["slow", "loading", "lag", "takes ages to load", "freez", "timeout"] },
+    "accessibility": { "label": "Accessibility", "keywords": ["screen reader", "keyboard", "contrast", "too small", "can't read", "zoom", "colour blind", "color blind"] },
+    "navigation": { "label": "Losing their way", "keywords": ["lost my place", "got lost", "back button", "where am i", "navigation", "menu", "couldn't get back"] },
+    "content": { "label": "Missing or wrong information", "keywords": ["missing information", "wrong information", "outdated", "doesn't say", "no explanation", "wish it showed", "wanted to see"] },
+    "other": { "label": "Other", "keywords": [] }
+  },
+  "positiveKeywords": ["love", "great", "easy", "like how", "fast", "helpful", "clear", "nice", "works well", "intuitive"],
+  "rules": [
+    {
+      "id": "fb.unblock-first",
+      "code": "FB_UNBLOCK_FIRST",
+      "when": { "all": [{ "question": "fb.blocks-task", "is": "true" }] },
+      "recommend": "Fix this before anything else: it stops people finishing their task. Reproduce it, then remove the blocker rather than documenting a workaround.",
+      "capabilities": []
+    },
+    {
+      "id": "fb.surface-frequent",
+      "code": "FB_SURFACE_FREQUENT",
+      "kinds": ["discoverability", "navigation"],
+      "when": { "all": [{ "question": "fb.discoverability", "is": "true" }, { "question": "fb.frequent", "is": "true" }] },
+      "recommend": "Bring it into view where the task happens: a visible primary or toolbar action, not an item in a menu.",
+      "capabilities": ["primary-action", "secondary-action"],
+      "relatedRules": ["SEARCH_REQUIRED"]
+    },
+    {
+      "id": "fb.signpost-occasional",
+      "code": "FB_SIGNPOST_OCCASIONAL",
+      "kinds": ["discoverability", "navigation"],
+      "when": { "all": [{ "question": "fb.discoverability", "is": "true" }], "none": [{ "question": "fb.frequent", "is": "true" }] },
+      "recommend": "Keep it out of the way but signpost it: a clearly labelled menu item, findable through search, with a hint at the moment it's needed.",
+      "capabilities": ["overflow-menu", "search-input", "tooltip"]
+    },
+    {
+      "id": "fb.plain-language",
+      "code": "FB_PLAIN_LANGUAGE",
+      "when": { "all": [{ "question": "fb.comprehension", "is": "true" }] },
+      "recommend": "Rename it in users' own words (quote the feedback), and add short helper text where the meaning still isn't obvious.",
+      "capabilities": ["inline-message", "tooltip"]
+    },
+    {
+      "id": "fb.add-recovery",
+      "code": "FB_ADD_RECOVERY",
+      "when": { "none": [{ "question": "fb.recoverable", "is": "true" }] },
+      "recommend": "Give people a way back: undo for reversible actions, keep their input when something fails, and errors that say how to fix the problem.",
+      "capabilities": ["undo-action", "inline-message"],
+      "relatedRules": ["REVERSIBLE_UNDO", "ERRORS_PERSISTENT"]
+    },
+    {
+      "id": "fb.protect-risky",
+      "code": "FB_PROTECT_RISKY",
+      "when": { "all": [{ "question": "fb.trust", "is": "true" }], "none": [{ "question": "fb.recoverable", "is": "true" }] },
+      "recommend": "Protect the risky action with a confirmation that names the consequence and the affected item.",
+      "capabilities": ["destructive-confirmation"],
+      "relatedRules": ["DESTRUCTIVE_PROTECTED", "IRREVERSIBLE_CONFIRM"]
+    },
+    {
+      "id": "fb.confirm-outcomes",
+      "code": "FB_CONFIRM_OUTCOMES",
+      "kinds": ["feedback", "trust"],
+      "when": { "any": [{ "question": "fb.trust", "is": "true" }, { "question": "fb.blocks-task", "is": "true" }, { "question": "fb.frequent", "is": "true" }] },
+      "recommend": "Make outcomes visible: confirm what happened, show what happens next, and show status where people look for it.",
+      "capabilities": ["toast-notification", "status-badge"],
+      "relatedRules": ["ASYNC_OUTCOME"]
+    },
+    {
+      "id": "fb.cut-steps",
+      "code": "FB_CUT_STEPS",
+      "kinds": ["efficiency"],
+      "when": { "all": [{ "question": "fb.frequent", "is": "true" }] },
+      "recommend": "Cut steps for this frequent task: act on several items at once, remember defaults, and support the keyboard.",
+      "capabilities": ["bulk-action-bar", "row-selection"],
+      "relatedRules": ["BULK_ACTIONS_REQUIRED"]
+    },
+    {
+      "id": "fb.smooth-occasional",
+      "code": "FB_SMOOTH_OCCASIONAL",
+      "kinds": ["efficiency"],
+      "when": { "none": [{ "question": "fb.frequent", "is": "true" }] },
+      "recommend": "For an occasional task, guide rather than speed up: sensible defaults and fewer decisions per step.",
+      "capabilities": ["step-indicator"]
+    },
+    {
+      "id": "fb.show-progress",
+      "code": "FB_SHOW_PROGRESS",
+      "kinds": ["performance"],
+      "when": { "any": [{ "question": "fb.frequent", "is": "true" }, { "question": "fb.trust", "is": "true" }, { "question": "fb.blocks-task", "is": "true" }] },
+      "recommend": "Measure and fix the slow step; until then, show progress so waiting is predictable and nobody repeats the action.",
+      "capabilities": ["loading-skeleton", "progress-indicator"]
+    },
+    {
+      "id": "fb.accessibility-defect",
+      "code": "FB_ACCESSIBILITY_DEFECT",
+      "kinds": ["accessibility"],
+      "when": { "any": [{ "question": "fb.blocks-task", "is": "true" }, { "question": "fb.severity", "scoreGte": 1 }] },
+      "recommend": "Treat it as an accessibility defect, not a preference: check keyboard access, focus, contrast and labels against WCAG 2.2 AA.",
+      "capabilities": []
+    },
+    {
+      "id": "fb.show-structure",
+      "code": "FB_SHOW_STRUCTURE",
+      "kinds": ["navigation"],
+      "when": { "any": [{ "question": "fb.frequent", "is": "true" }, { "question": "fb.blocks-task", "is": "true" }, { "question": "fb.severity", "scoreGte": 1.5 }] },
+      "recommend": "Make the structure visible: say where people are, and give a reliable way back (breadcrumbs, persistent navigation, preserved place in lists).",
+      "capabilities": ["breadcrumb-trail", "sidebar-navigation"],
+      "relatedRules": ["CONTEXT_PRESERVATION"]
+    },
+    {
+      "id": "fb.right-content",
+      "code": "FB_RIGHT_CONTENT",
+      "kinds": ["content"],
+      "when": { "any": [{ "question": "fb.blocks-task", "is": "true" }, { "question": "fb.severity", "scoreGte": 1 }] },
+      "recommend": "Add the information people asked for, where they need it, in their vocabulary.",
+      "capabilities": []
+    }
+  ]
+}

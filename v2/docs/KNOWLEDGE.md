@@ -725,3 +725,333 @@ Asked once per evaluated solution. A good answer is `true` (or a high level); a 
 | `eval.ds.compliant` | Design-system compliance | Is the solution built from the design system's components? | high | The solution relies on elements outside the design system → Build from the design system's components, and mark anything missing as a net-new component. |
 | `eval.states.represented` | Required states | Does the solution show its loading, empty and error states? | high | Loading, empty or error states aren't described → Describe what users see while loading, when there's nothing to show, and when something fails. |
 | `eval.responsive.adapts` | Responsive behavior | Does the solution work on the devices people will use? | medium | It isn't clear how this works on the expected devices → Describe how the layout adapts to each expected device, especially phones. |
+
+## Copy guidelines (1.0.0)
+
+What UI Copy checks every string against. Errors are hard rules the writer is retried on; warnings are reported.
+
+### VERB_OBJECT_BUTTONS `copy.verb-object`
+
+```text
+Buttons start with a verb that says what happens, and name the object when it isn't obvious.
+SOURCE  NN/g, writing for interfaces
+```
+
+### CONFIRM_NAMES_ACTION `copy.confirm-names-action`
+
+```text
+A confirm button repeats the action's verb ("Reject report"), never OK, Yes, Confirm or Continue, so the choice is clear without reading the message.
+
+CHECK   forbidExact: ok, okay, yes, confirm, continue, submit, sure, proceed
+SOURCE  Nielsen heuristic 5 (error prevention); NN/g confirmation dialogs
+```
+
+### CONFIRM_INCLUDES_VERB `copy.confirm-includes-verb`
+
+```text
+The confirm button contains the action's own verb.
+
+CHECK   includesActionVerb
+SOURCE  NN/g confirmation dialogs
+```
+
+### CANCEL_IS_SAFE `copy.cancel-is-safe`
+
+```text
+The cancel button says what staying safe means ("Cancel", "Keep report"), never No.
+
+CHECK   forbidExact: no, nope
+SOURCE  NN/g confirmation dialogs
+```
+
+### NO_ARE_YOU_SURE `copy.no-are-you-sure`
+
+```text
+Ask about the specific action ("Reject this report?") rather than "Are you sure?".
+
+CHECK   forbidPhrase: are you sure
+SOURCE  NN/g confirmation dialogs
+```
+
+### STATE_THE_CONSEQUENCE `copy.consequence-stated`
+
+```text
+Say what will happen, who is affected, and whether it can be undone.
+```
+
+### SAY_IRREVERSIBLE `copy.irreversible-said`
+
+```text
+When the action can't be undone, the message says so.
+
+CHECK   mustMentionWhen: can't be undone, cannot be undone, can not be undone, permanent, can't undo, cannot undo, can't reverse, cannot reverse
+SOURCE  WCAG 3.3.4 (error prevention)
+```
+
+### ERRORS_EXPLAIN_AND_FIX `copy.errors-explain-and-fix`
+
+```text
+Errors say what went wrong in plain words and how to fix it; no codes, no blame.
+SOURCE  Nielsen heuristic 9; WCAG 3.3.3
+```
+
+### NO_CUTE_ERRORS `copy.no-cute-errors`
+
+```text
+Errors stay calm and plain: no "Oops", no exclamation marks.
+
+CHECK   forbidPhrase: oops, whoops, uh oh, !
+SOURCE  Mailchimp content style guide
+```
+
+### BULK_COUNT `copy.bulk-count`
+
+```text
+Messages for actions that apply to many items show the count, using the {count} placeholder.
+
+CHECK   mustMentionWhen: {count}
+```
+
+### MONEY_EXPLICIT `copy.money-explicit`
+
+```text
+Actions that charge money say so plainly, with the amount where known ({amount}).
+```
+
+### EMPTY_STATES_GUIDE `copy.empty-guides`
+
+```text
+Empty states explain why it's empty and what to do next, with one clear action.
+```
+
+### FIT_THE_SPACE `copy.length`
+
+```text
+Each string fits its slot's character limit.
+
+CHECK   maxChars
+```
+
+### Does this action destroy, reject or lose something? `copy.action.destructive`
+
+```text
+Using the problem and the action's description, decide whether performing this action deletes, rejects, cancels or otherwise loses something users or other people would not want lost by mistake.
+
+TRUE   The action deletes, rejects, cancels or loses something
+FALSE  The action creates, confirms, moves or exports something without loss
+```
+
+### Can this action be undone easily? `copy.action.reversible`
+
+```text
+Decide whether the effect of this action can be reversed by the user shortly afterwards, without help from anyone else and without side effects already having happened (such as notifications sent or payments made).
+
+TRUE   The user can undo it shortly afterwards with no lasting side effects
+FALSE  It can't be undone, or undoing it needs others or leaves side effects
+```
+
+### Does this action affect or notify other people? `copy.action.notifies-others`
+
+```text
+Decide whether this action has a consequence for someone other than the user performing it: they are notified, must act, or are charged or paid.
+
+TRUE   Someone else is notified, must act, or is affected
+FALSE  Only the user performing it is affected
+```
+
+### Does this action charge or commit money? `copy.action.costs-money`
+
+```text
+Decide whether performing this action charges a payment method, starts a paid plan, or commits the user or organisation to spend money.
+
+TRUE   It charges, starts paying, or commits money
+FALSE  No money is charged or committed
+```
+
+## Feedback rules (1.0.0)
+
+How Feedback Summary turns the decision model's judgments about an issue into recommended changes.
+
+### FB_UNBLOCK_FIRST `fb.unblock-first`
+
+```text
+WHEN      Does this stop users from finishing what they came to do?  is true
+RECOMMEND Fix this before anything else: it stops people finishing their task. Reproduce it, then remove the blocker rather than documenting a workaround.
+```
+
+### FB_SURFACE_FREQUENT `fb.surface-frequent`
+
+```text
+WHEN      Is the problem that users can't find something?  is true
+AND       Does it affect something users do often?  is true
+FOR       discoverability, navigation issues
+RECOMMEND Bring it into view where the task happens: a visible primary or toolbar action, not an item in a menu.
+NEEDS     primary-action, secondary-action
+SEE       SEARCH_REQUIRED
+```
+
+### FB_SIGNPOST_OCCASIONAL `fb.signpost-occasional`
+
+```text
+WHEN      Is the problem that users can't find something?  is true
+AND NOT   Does it affect something users do often?  is true
+FOR       discoverability, navigation issues
+RECOMMEND Keep it out of the way but signpost it: a clearly labelled menu item, findable through search, with a hint at the moment it's needed.
+NEEDS     overflow-menu, search-input, tooltip
+```
+
+### FB_PLAIN_LANGUAGE `fb.plain-language`
+
+```text
+WHEN      Do users misunderstand what something means or does?  is true
+RECOMMEND Rename it in users' own words (quote the feedback), and add short helper text where the meaning still isn't obvious.
+NEEDS     inline-message, tooltip
+```
+
+### FB_ADD_RECOVERY `fb.add-recovery`
+
+```text
+WHEN NOT  Can users recover on their own?  is true
+RECOMMEND Give people a way back: undo for reversible actions, keep their input when something fails, and errors that say how to fix the problem.
+NEEDS     undo-action, inline-message
+SEE       REVERSIBLE_UNDO, ERRORS_PERSISTENT
+```
+
+### FB_PROTECT_RISKY `fb.protect-risky`
+
+```text
+WHEN      Does it make users doubt whether things worked or are safe?  is true
+AND NOT   Can users recover on their own?  is true
+RECOMMEND Protect the risky action with a confirmation that names the consequence and the affected item.
+NEEDS     destructive-confirmation
+SEE       DESTRUCTIVE_PROTECTED, IRREVERSIBLE_CONFIRM
+```
+
+### FB_CONFIRM_OUTCOMES `fb.confirm-outcomes`
+
+```text
+WHEN ANY  Does it make users doubt whether things worked or are safe?  is true  |  Does this stop users from finishing what they came to do?  is true  |  Does it affect something users do often?  is true
+FOR       feedback, trust issues
+RECOMMEND Make outcomes visible: confirm what happened, show what happens next, and show status where people look for it.
+NEEDS     toast-notification, status-badge
+SEE       ASYNC_OUTCOME
+```
+
+### FB_CUT_STEPS `fb.cut-steps`
+
+```text
+WHEN      Does it affect something users do often?  is true
+FOR       efficiency issues
+RECOMMEND Cut steps for this frequent task: act on several items at once, remember defaults, and support the keyboard.
+NEEDS     bulk-action-bar, row-selection
+SEE       BULK_ACTIONS_REQUIRED
+```
+
+### FB_SMOOTH_OCCASIONAL `fb.smooth-occasional`
+
+```text
+WHEN NOT  Does it affect something users do often?  is true
+FOR       efficiency issues
+RECOMMEND For an occasional task, guide rather than speed up: sensible defaults and fewer decisions per step.
+NEEDS     step-indicator
+```
+
+### FB_SHOW_PROGRESS `fb.show-progress`
+
+```text
+WHEN ANY  Does it affect something users do often?  is true  |  Does it make users doubt whether things worked or are safe?  is true  |  Does this stop users from finishing what they came to do?  is true
+FOR       performance issues
+RECOMMEND Measure and fix the slow step; until then, show progress so waiting is predictable and nobody repeats the action.
+NEEDS     loading-skeleton, progress-indicator
+```
+
+### FB_ACCESSIBILITY_DEFECT `fb.accessibility-defect`
+
+```text
+WHEN ANY  Does this stop users from finishing what they came to do?  is true  |  How severe is the issue for the people affected?  score ≥ 1
+FOR       accessibility issues
+RECOMMEND Treat it as an accessibility defect, not a preference: check keyboard access, focus, contrast and labels against WCAG 2.2 AA.
+```
+
+### FB_SHOW_STRUCTURE `fb.show-structure`
+
+```text
+WHEN ANY  Does it affect something users do often?  is true  |  Does this stop users from finishing what they came to do?  is true  |  How severe is the issue for the people affected?  score ≥ 1.5
+FOR       navigation issues
+RECOMMEND Make the structure visible: say where people are, and give a reliable way back (breadcrumbs, persistent navigation, preserved place in lists).
+NEEDS     breadcrumb-trail, sidebar-navigation
+SEE       CONTEXT_PRESERVATION
+```
+
+### FB_RIGHT_CONTENT `fb.right-content`
+
+```text
+WHEN ANY  Does this stop users from finishing what they came to do?  is true  |  How severe is the issue for the people affected?  score ≥ 1
+FOR       content issues
+RECOMMEND Add the information people asked for, where they need it, in their vocabulary.
+```
+
+### Does this stop users from finishing what they came to do? `fb.blocks-task`
+
+```text
+Using the issue's summary and evidence, decide whether the problem prevents users from completing their task (they give up, get stuck, or need help), rather than only slowing or annoying them.
+
+TRUE   Users get stuck, give up or need help to finish
+FALSE  Users can still finish, even if slower or annoyed
+```
+
+### Does it affect something users do often? `fb.frequent`
+
+```text
+Decide whether the issue occurs in a task or moment users go through frequently (daily, every session, every time they use a feature), rather than a rare or one-off situation.
+
+TRUE   It happens in a frequent task or every session
+FALSE  It happens rarely or once
+```
+
+### Is the problem that users can't find something? `fb.discoverability`
+
+```text
+Decide whether the core of the issue is that users cannot find or don't notice a feature, action or piece of information that exists.
+
+TRUE   Users can't find or don't notice something that exists
+FALSE  Finding things isn't the problem
+```
+
+### Do users misunderstand what something means or does? `fb.comprehension`
+
+```text
+Decide whether users misread labels, terms, numbers or states, or expect something to do something other than what it does.
+
+TRUE   Users misunderstand meaning or behaviour
+FALSE  Users understand it; the problem is elsewhere
+```
+
+### Can users recover on their own? `fb.recoverable`
+
+```text
+Decide whether users can undo the mistake or get back on track by themselves, without losing work or needing support.
+
+TRUE   Users can undo it or get back on track themselves
+FALSE  Work is lost, or users need help to recover
+```
+
+### Does it make users doubt whether things worked or are safe? `fb.trust`
+
+```text
+Decide whether the issue leaves users unsure whether an action succeeded, worried about consequences, or less willing to trust the product.
+
+TRUE   Users are unsure, worried or lose trust
+FALSE  Trust and certainty aren't affected
+```
+
+### How severe is the issue for the people affected? `fb.severity`
+
+```text
+Rate the severity of the issue for the people who hit it, from the evidence.
+
+0  Cosmetic: noticed, but no effect on the task
+1  Minor: slows users down or annoys them
+2  Major: significant difficulty, errors or frustration
+3  Blocking: users can't complete the task or lose work
+```
