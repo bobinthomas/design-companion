@@ -44,3 +44,43 @@ export function clearSettings(): void {
   window.localStorage.removeItem(STORAGE_KEY);
   window.dispatchEvent(new Event(SETTINGS_CHANGED_EVENT));
 }
+
+// ---------- Cloudflare credentials (visitor's own Jev access) ----------
+
+const CLOUDFLARE_STORAGE_KEY = "design-companion-v2:cloudflare-settings";
+
+export interface StoredCloudflareSettings {
+  accountId: string;
+  apiToken: string;
+}
+
+/**
+ * A visitor's own Cloudflare account for Jev, so they aren't limited by the
+ * shared daily quota. Same storage rules as the LLM key: this browser only,
+ * sent only with decision requests, never persisted server-side.
+ */
+export function loadCloudflareSettings(): StoredCloudflareSettings | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(CLOUDFLARE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed?.accountId !== "string" || typeof parsed?.apiToken !== "string") return null;
+    if (!parsed.accountId || !parsed.apiToken) return null;
+    return { accountId: parsed.accountId, apiToken: parsed.apiToken };
+  } catch {
+    return null;
+  }
+}
+
+export function saveCloudflareSettings(settings: StoredCloudflareSettings): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(CLOUDFLARE_STORAGE_KEY, JSON.stringify(settings));
+  window.dispatchEvent(new Event(SETTINGS_CHANGED_EVENT));
+}
+
+export function clearCloudflareSettings(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(CLOUDFLARE_STORAGE_KEY);
+  window.dispatchEvent(new Event(SETTINGS_CHANGED_EVENT));
+}

@@ -26,7 +26,7 @@ Implements [PRD.md](PRD.md) v2.2. V2 is a separate Next.js app in `v2/`, deploye
 ## Milestones
 
 1. **Contracts** ✅ — all PRD §32 schemas + tests, app scaffold, Worker config.
-2. **Decision infrastructure** — `DecisionProvider` + Jev (binding/REST), LLM and Mock providers; question registry; confidence bands; KV quota; live Jev smoke test.
+2. **Decision infrastructure** ✅ — `DecisionProvider` + Jev (binding/REST), LLM and Mock providers; question registry; confidence bands; KV quota; live Jev smoke test.
 3. **Design System Intelligence** — capability vocabulary, composition recipes, default design system JSON, normalizer, capability mapping, resolution + gap detection + gap policy, registry query APIs.
 4. **UX Policy** — rule engine, policy engine, pattern resolver, component resolver. Golden test: expense dashboard via Mock provider.
 5. **Knowledge base** — 30–50 rules, ~30 questions, 14 patterns, 13+ components with claims.
@@ -40,3 +40,8 @@ Implements [PRD.md](PRD.md) v2.2. V2 is a separate Next.js app in `v2/`, deploye
 
 - Workers AI enabled on the Cloudflare account; `wrangler login` locally (the AI binding always runs remotely, so local dev incurs real, tiny charges).
 - Approval to create the KV namespace for the quota.
+
+## Status notes
+
+- **Milestone 2:** Workers AI binding and KV namespace (`JEV_QUOTA`, id `f798c432…`) are configured in `wrangler.jsonc`. The live smoke test reached Jev through the binding; Jev returned `2021: Insufficient AI Gateway credits`, and the request fell back to the mock with visible notices. **Action for the owner:** add Workers AI / AI Gateway credits to the Cloudflare account; no code change needed.
+- Failed binding calls refund the visitor's quota (failures aren't billed).

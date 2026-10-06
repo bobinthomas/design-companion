@@ -1,0 +1,414 @@
+[
+  {
+    "id": "data.volume.high",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "noul",
+    "question": "Is the expected data volume high?",
+    "instructions": "Judge whether users routinely work with more records than comfortably fit on one screen (roughly 50 or more at a time).",
+    "criteria": {
+      "true": "Users regularly face dozens to thousands of records",
+      "false": "Users work with a handful of records at a time"
+    },
+    "mock": { "keywords": { "true": ["hundreds", "thousands", "150", "300", "large number", "many records"] }, "default": "false" }
+  },
+  {
+    "id": "data.comparison.required",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "noul",
+    "question": "Is comparison between records important?",
+    "instructions": "Judge whether users need to compare values across multiple records side by side to do their primary task.",
+    "criteria": {
+      "true": "Users compare attributes across several records",
+      "false": "Users look at one record at a time"
+    },
+    "mock": { "keywords": { "true": ["compare", "comparison", "across employees", "side by side"] }, "default": "false" }
+  },
+  {
+    "id": "data.filtering.required",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "noul",
+    "question": "Is filtering required?",
+    "instructions": "Judge whether users need to narrow the set of records by attributes such as status, category, owner or date.",
+    "criteria": {
+      "true": "Users need to narrow records by attributes",
+      "false": "Users can work with the full set without narrowing it"
+    },
+    "mock": { "keywords": { "true": ["filter", "narrow", "status", "category"] }, "default": "false" }
+  },
+  {
+    "id": "data.sorting.required",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "noul",
+    "question": "Is sorting required?",
+    "instructions": "Judge whether users need to reorder records by an attribute such as amount, date or priority to find what matters.",
+    "criteria": {
+      "true": "Users need to reorder records by attributes",
+      "false": "A single fixed order is sufficient"
+    },
+    "mock": { "keywords": { "true": ["sort", "amount", "priorit", "oldest", "newest"] }, "default": "false" }
+  },
+  {
+    "id": "data.search.required",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "noul",
+    "question": "Do users need to search for specific records?",
+    "instructions": "Judge whether users need to find a specific known record by name, id or text rather than by browsing.",
+    "criteria": {
+      "true": "Users look up specific known records",
+      "false": "Users only browse or work through records in order"
+    },
+    "mock": { "keywords": { "true": ["search", "find a specific", "look up", "lookup"] }, "default": "false" }
+  },
+  {
+    "id": "data.density.need",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "score",
+    "question": "How much information per record must be visible at once?",
+    "instructions": "Rate how many attributes of each record users need to see at a glance, without opening the record.",
+    "criteria": [
+      "Low: one or two attributes such as a title and a status",
+      "Medium: three to five attributes",
+      "High: six or more attributes compared at a glance"
+    ],
+    "mock": { "keywords": { "2": ["amount", "category", "policy flags"], "0": ["title only", "name only"] }, "default": "1" }
+  },
+  {
+    "id": "data.records.visual",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "noul",
+    "question": "Are records primarily recognized visually?",
+    "instructions": "Judge whether users identify records mainly by an image or visual preview (photos, thumbnails, designs) rather than by text and numbers.",
+    "criteria": {
+      "true": "Records are recognized by images or visual previews",
+      "false": "Records are recognized by text and numbers"
+    },
+    "mock": { "keywords": { "true": ["photo", "image", "thumbnail", "visual preview", "gallery"] }, "default": "false" }
+  },
+  {
+    "id": "data.structure.kind",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "choice",
+    "question": "How is the data structured?",
+    "instructions": "Pick the structure that best describes the main records users work with.",
+    "criteria": {
+      "flat-independent-records": "Independent records of the same kind, such as orders or tickets",
+      "nested-hierarchy": "Records nested in parent/child levels, such as folders or org charts",
+      "ordered-stages": "Records that move through ordered stages, such as a sales pipeline",
+      "time-ordered-events": "Events that matter mainly by when they happened, such as an activity log"
+    },
+    "mock": {
+      "keywords": {
+        "nested-hierarchy": ["folder", "hierarchy", "nested", "parent"],
+        "ordered-stages": ["pipeline", "stage", "kanban"],
+        "time-ordered-events": ["activity log", "history", "timeline"]
+      },
+      "default": "flat-independent-records"
+    }
+  },
+  {
+    "id": "task.frequency.high",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Is the primary task performed frequently?",
+    "instructions": "Judge whether the primary task is performed daily or more often by the same users.",
+    "criteria": {
+      "true": "Performed daily or more often",
+      "false": "Performed weekly or less often"
+    },
+    "mock": { "keywords": { "true": ["\"daily\"", "every day", "continuous"] }, "default": "false" }
+  },
+  {
+    "id": "task.bulk-actions.required",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Are bulk actions required?",
+    "instructions": "Judge whether users need to apply the same action to several records at once.",
+    "criteria": {
+      "true": "Users apply one action to many records at once",
+      "false": "Users act on one record at a time"
+    },
+    "mock": { "keywords": { "true": ["several", "at once", "bulk", "batch"] }, "default": "false" }
+  },
+  {
+    "id": "task.detail-in-context.required",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do users need record details without losing their place in the list?",
+    "instructions": "Judge whether users repeatedly open one record's details and then return to the same position in a list of records.",
+    "criteria": {
+      "true": "Users inspect details and return to the list repeatedly",
+      "false": "Users rarely need record details, or work on one record in depth"
+    },
+    "mock": { "keywords": { "true": ["inspect", "line items", "receipt", "details"] }, "default": "false" }
+  },
+  {
+    "id": "task.multi-step.required",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Is the task a multi-step process?",
+    "instructions": "Judge whether completing the primary task requires several distinct steps that must happen in order.",
+    "criteria": {
+      "true": "The task has several ordered steps",
+      "false": "The task is done in one place"
+    },
+    "mock": { "keywords": { "true": ["step", "wizard", "onboarding", "checkout"] }, "default": "false" }
+  },
+  {
+    "id": "task.data-entry.heavy",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Is the task dominated by data entry?",
+    "instructions": "Judge whether users spend most of their time entering or editing information in fields, rather than reviewing it.",
+    "criteria": {
+      "true": "Mostly entering or editing information",
+      "false": "Mostly reviewing or acting on existing information"
+    },
+    "mock": { "keywords": { "true": ["fill in", "enter data", "data entry", "form"] }, "default": "false" }
+  },
+  {
+    "id": "task.long-form.present",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Does the task include a long form?",
+    "instructions": "Judge whether users must complete a form with more than about seven fields.",
+    "criteria": {
+      "true": "There is a form with more than about seven fields",
+      "false": "Forms are short or absent"
+    },
+    "mock": { "keywords": { "true": ["long form", "application form", "registration"] }, "default": "false" }
+  },
+  {
+    "id": "task.monitoring.aggregate",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do users monitor aggregate metrics?",
+    "instructions": "Judge whether users need totals, trends or KPIs across many records, beyond the individual records themselves.",
+    "criteria": {
+      "true": "Totals, trends or KPIs matter to the task",
+      "false": "Only individual records matter"
+    },
+    "mock": { "keywords": { "true": ["metric", "kpi", "trend", "monitor", "overview", "totals"] }, "default": "false" }
+  },
+  {
+    "id": "task.exceptions.important",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Must users spot unusual or problematic records?",
+    "instructions": "Judge whether an important part of the task is noticing records that are unusual, risky or violate a policy.",
+    "criteria": {
+      "true": "Spotting unusual or problematic records is important",
+      "false": "All records are handled the same way"
+    },
+    "mock": { "keywords": { "true": ["policy violation", "policy flags", "anomal", "unusual", "exception"] }, "default": "false" }
+  },
+  {
+    "id": "action.destructive.present",
+    "purpose": "analysis",
+    "category": "action",
+    "type": "noul",
+    "question": "Does the workflow include destructive actions?",
+    "instructions": "Judge whether users can take actions that delete, reject, cancel or otherwise discard work or data, or that are hard to reverse.",
+    "criteria": {
+      "true": "There are destructive or hard-to-reverse actions",
+      "false": "All actions are safe and easily reversed"
+    },
+    "mock": { "keywords": { "true": ["reject", "delete", "remove", "cancel", "revoke"] }, "default": "false" }
+  },
+  {
+    "id": "action.destructive.reversible",
+    "purpose": "analysis",
+    "category": "action",
+    "type": "noul",
+    "question": "Can destructive actions be undone easily?",
+    "instructions": "Judge whether the destructive actions in this workflow could be undone immediately by the same user without side effects on other people.",
+    "criteria": {
+      "true": "Destructive actions can be undone immediately with no side effects",
+      "false": "Destructive actions notify others, trigger processes or cannot be undone"
+    },
+    "mock": { "keywords": { "true": ["undo", "restore", "reversible", "recycle bin"] }, "default": "false" }
+  },
+  {
+    "id": "risk.error-cost",
+    "purpose": "analysis",
+    "category": "risk",
+    "type": "score",
+    "question": "How costly is a user error?",
+    "instructions": "Rate the consequence of a user making a mistake in this workflow.",
+    "criteria": [
+      "Low: a minor inconvenience, easily corrected",
+      "Medium: wasted time or rework for the user or a colleague",
+      "High: money, legal, safety or trust consequences"
+    ],
+    "mock": { "keywords": { "2": ["payment", "money", "reimburse", "legal", "medical", "compliance"], "0": ["personal notes", "draft"] }, "default": "1" }
+  },
+  {
+    "id": "task.time-pressure",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "score",
+    "question": "How much time pressure are users under?",
+    "instructions": "Rate how much time pressure users are under while performing the primary task.",
+    "criteria": [
+      "Low: users can take their time",
+      "Medium: there are deadlines but no moment-to-moment pressure",
+      "High: users must act within seconds or minutes"
+    ],
+    "mock": { "keywords": { "2": ["urgent", "immediately", "real-time", "emergency"], "1": ["moderate", "deadline", "due"] }, "default": "0" }
+  },
+  {
+    "id": "app.sections.count",
+    "purpose": "analysis",
+    "category": "navigation",
+    "type": "choice",
+    "question": "How many distinct sections does this experience have?",
+    "instructions": "Pick how many distinct top-level sections or areas users move between in this experience.",
+    "criteria": {
+      "single-focused-screen": "One focused screen with no separate sections",
+      "few-peer-sections": "Two to five peer sections users switch between",
+      "many-deep-sections": "More than five sections, or sections nested several levels deep"
+    },
+    "mock": {
+      "keywords": {
+        "few-peer-sections": ["tabs", "sections", "settings page"],
+        "many-deep-sections": ["modules", "admin console", "nested sections"]
+      },
+      "default": "single-focused-screen"
+    }
+  },
+  {
+    "id": "selection.mode",
+    "purpose": "analysis",
+    "category": "interaction",
+    "type": "choice",
+    "question": "How do users choose among options?",
+    "instructions": "Pick how users select among the options presented to them in forms or settings (not rows in a list).",
+    "criteria": {
+      "no-option-selection": "Users do not choose among options",
+      "one-of-several": "Users pick exactly one option from a set",
+      "several-independent": "Users can pick several independent options",
+      "on-off-setting": "Users switch a single setting on or off"
+    },
+    "mock": {
+      "keywords": {
+        "one-of-several": ["choose one", "pick one", "select a plan"],
+        "several-independent": ["choose several", "multiple options", "tags"],
+        "on-off-setting": ["toggle", "enable", "turn on"]
+      },
+      "default": "no-option-selection"
+    }
+  },
+  {
+    "id": "selection.option-count",
+    "purpose": "analysis",
+    "category": "interaction",
+    "type": "choice",
+    "question": "How many options do users choose from?",
+    "instructions": "Pick how many options a typical selection offers.",
+    "criteria": {
+      "two-to-five-options": "Between two and five options",
+      "six-to-fifteen-options": "Between six and fifteen options",
+      "more-than-fifteen-options": "More than fifteen options, such as countries or people"
+    },
+    "mock": {
+      "keywords": {
+        "six-to-fifteen-options": ["categories"],
+        "more-than-fifteen-options": ["country", "countries", "employees list", "timezone"]
+      },
+      "default": "two-to-five-options"
+    }
+  },
+  {
+    "id": "device.mobile.likely",
+    "purpose": "analysis",
+    "category": "context",
+    "type": "noul",
+    "question": "Is mobile use likely?",
+    "instructions": "Judge whether a meaningful share of users will do this task on a phone.",
+    "criteria": {
+      "true": "A meaningful share of use happens on phones",
+      "false": "Use happens almost entirely on larger screens"
+    },
+    "mock": { "keywords": { "true": ["on the go", "field work", "mobile app", "\"mobile\""] }, "default": "false" }
+  },
+  {
+    "id": "feedback.outcome.async",
+    "purpose": "analysis",
+    "category": "feedback",
+    "type": "noul",
+    "question": "Do action outcomes arrive later?",
+    "instructions": "Judge whether the results of users' actions complete in the background or arrive after a delay, rather than instantly.",
+    "criteria": {
+      "true": "Outcomes complete in the background or after a delay",
+      "false": "Outcomes are immediate"
+    },
+    "mock": { "keywords": { "true": ["background", "processing", "queued", "export"] }, "default": "false" }
+  },
+  {
+    "id": "decision.data-presentation",
+    "purpose": "analysis",
+    "category": "data",
+    "type": "choice",
+    "decision": "dataPresentation",
+    "question": "Which data presentation best fits the task?",
+    "instructions": "Pick the presentation that best supports the primary task for these users and this data.",
+    "criteria": {
+      "data-table": "Rows and columns for scanning, comparing and sorting many structured records",
+      "card-grid": "Visual cards for browsing records recognized by images or a few attributes",
+      "list": "A simple vertical list of records with one or two attributes each",
+      "timeline": "Records placed in time order to show when things happened",
+      "kanban": "Columns of cards representing stages that records move through",
+      "chart": "A visualization of aggregate values rather than individual records"
+    },
+    "mock": {
+      "keywords": {
+        "data-table": ["compare", "amount", "category", "status"],
+        "card-grid": ["photo", "image", "gallery"],
+        "timeline": ["history", "timeline"],
+        "kanban": ["pipeline", "stage"],
+        "chart": ["trend", "kpi"]
+      },
+      "default": "list"
+    }
+  },
+  {
+    "id": "decision.layout",
+    "purpose": "analysis",
+    "category": "layout",
+    "type": "choice",
+    "decision": "layout",
+    "question": "Which overall layout best fits the task?",
+    "instructions": "Pick the screen-level layout that best supports the primary task.",
+    "criteria": {
+      "single-page": "One scrolling page holding the whole task",
+      "multi-step": "A sequence of screens completed in order",
+      "split-view": "A list beside a detail pane, so records are inspected without leaving the list",
+      "dashboard": "An overview of several summary widgets and entry points",
+      "detail-view": "One record shown in full depth"
+    },
+    "mock": {
+      "keywords": {
+        "split-view": ["inspect", "line items", "details"],
+        "dashboard": ["dashboard", "overview", "kpi"],
+        "multi-step": ["step", "wizard", "checkout"],
+        "detail-view": ["profile page", "single record"]
+      },
+      "default": "single-page"
+    }
+  }
+]

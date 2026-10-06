@@ -10,6 +10,7 @@ import {
   type Provider,
 } from "@/lib/ai/providers";
 import { clearSettings, loadSettings, saveSettings } from "@/lib/ai/clientSettings";
+import { CloudflareSettings } from "@/components/CloudflareSettings";
 
 export default function SettingsPage() {
   const [provider, setProvider] = useState<Provider>("anthropic");
@@ -160,10 +161,12 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      <CloudflareSettings />
+
       <p className="text-xs text-zinc-400 dark:text-zinc-500">
-        Your key is stored only in this browser&apos;s local storage. It&apos;s sent directly with each
-        generation request and is never saved on our server or logged anywhere. Clearing your
-        browser data removes it.
+        Keys and tokens are stored only in this browser&apos;s local storage. They&apos;re sent
+        directly with each request that needs them and are never saved on our server or logged
+        anywhere. Clearing your browser data removes them.
       </p>
     </main>
   );

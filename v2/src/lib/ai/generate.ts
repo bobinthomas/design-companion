@@ -105,7 +105,8 @@ interface GenerateStructuredOptions<T> {
   systemPrompt: string;
   userPrompt: string;
   schema: z.ZodType<T>;
-  mock: T;
+  /** Canned data used when no provider is configured. Omit to fail instead. */
+  mock?: T;
   clientConfig?: ProviderClientConfig;
   /** Total model calls allowed when output fails JSON/schema validation. */
   maxAttempts?: number;
@@ -114,13 +115,34 @@ interface GenerateStructuredOptions<T> {
 interface GenerateStructuredResult<T> {
   data: T;
   source: Provider | "mock";
+  /** The model actually called; "mock" for canned data. */
+  model: string;
 }
 
 /**
- * Resolves a provider to call, in order of precedence:
+ * Resolves the LLM to use, in order of precedence:
  * 1. A client-supplied key from the Settings screen (bring-your-own-key, per browser)
  * 2. A server-side ANTHROPIC_API_KEY env var (local dev convenience)
- * 3. Canned mock data, so every mode still works with zero setup
+ * Returns undefined when neither is available.
+ */
+export function resolveLlmConfig(
+  clientConfig?: ProviderClientConfig
+): ProviderClientConfig | undefined {
+  if (clientConfig?.apiKey?.trim()) return clientConfig;
+  if (process.env.ANTHROPIC_API_KEY) {
+    return {
+      provider: "anthropic",
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      model: process.env.ANTHROPIC_MODEL,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Calls the resolved LLM and validates its JSON against `schema`, retrying
+ * with the validation error. With no LLM configured, returns `mock` so every
+ * feature still works with zero setup — or throws if no mock was given.
  */
 export async function generateStructured<T>({
   systemPrompt,
@@ -130,21 +152,16 @@ export async function generateStructured<T>({
   clientConfig,
   maxAttempts = 2,
 }: GenerateStructuredOptions<T>): Promise<GenerateStructuredResult<T>> {
-  const config: ProviderClientConfig | undefined =
-    clientConfig?.apiKey?.trim()
-      ? clientConfig
-      : process.env.ANTHROPIC_API_KEY
-        ? {
-            provider: "anthropic",
-            apiKey: process.env.ANTHROPIC_API_KEY,
-            model: process.env.ANTHROPIC_MODEL,
-          }
-        : undefined;
+  const config = resolveLlmConfig(clientConfig);
 
   if (!config) {
+    if (mock === undefined) {
+      throw new Error("No LLM provider is configured");
+    }
     await simulateDelay();
-    return { data: mock, source: "mock" };
+    return { data: mock, source: "mock", model: "mock" };
   }
+  const model = config.model?.trim() || PROVIDER_DEFAULT_MODELS[config.provider];
 
   let prompt = userPrompt;
   let lastError = "";
@@ -152,7 +169,7 @@ export async function generateStructured<T>({
     const text = await callProvider(config, systemPrompt, prompt);
     const outcome = parseAndValidate(text, schema);
     if (outcome.ok) {
-      return { data: outcome.data, source: config.provider };
+      return { data: outcome.data, source: config.provider, model };
     }
     lastError = outcome.error;
     // Feed the validation error back so the model can correct itself — e.g. a

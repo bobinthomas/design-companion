@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { dottedIdSchema, kebabIdSchema } from "./vocabulary";
+import { decisionTypeSchema, dottedIdSchema, kebabIdSchema } from "./vocabulary";
 
 /**
  * PRD §8–10 Decision Question — one atomic, typed question evaluated against
@@ -39,6 +39,11 @@ export const noulQuestionSchema = z.object({
 export const choiceQuestionSchema = z.object({
   ...questionBase,
   type: z.literal("choice"),
+  /**
+   * When set, this question's probabilities are the model's prior for that
+   * policy decision slot, and its option ids must be options of that slot.
+   */
+  decision: decisionTypeSchema.optional(),
   /** Option id → what that option means. Ids must be self-describing. */
   criteria: z
     .record(kebabIdSchema, z.string().min(1))
