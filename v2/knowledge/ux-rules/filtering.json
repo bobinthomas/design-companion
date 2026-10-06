@@ -1,0 +1,51 @@
+[
+  {
+    "id": "filtering.frequent.persistent-bar",
+    "code": "FILTER_REQUIRED",
+    "category": "filtering",
+    "tier": "task",
+    "priority": "high",
+    "when": {
+      "all": [
+        { "question": "data.filtering.required", "is": "true" },
+        { "question": "task.frequency.high", "is": "true" }
+      ]
+    },
+    "decision": "filtering",
+    "recommend": ["persistent-filter-bar"],
+    "avoid": ["none"],
+    "reason": "Frequent users narrow records constantly; keeping filters visible saves opening a panel every time and shows what's applied.",
+    "source": "NN/g: Filters vs. Facets"
+  },
+  {
+    "id": "filtering.occasional.panel",
+    "code": "FILTER_OCCASIONAL",
+    "category": "filtering",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [{ "question": "data.filtering.required", "is": "true" }],
+      "none": [{ "question": "task.frequency.high", "is": "true" }]
+    },
+    "decision": "filtering",
+    "recommend": ["filter-panel"],
+    "avoid": ["none"],
+    "reason": "Occasional filtering doesn't justify permanent screen space; a panel keeps many filters available on demand."
+  },
+  {
+    "id": "filtering.small-set.none",
+    "code": "FILTER_UNNECESSARY",
+    "category": "filtering",
+    "tier": "visual",
+    "priority": "low",
+    "when": {
+      "none": [
+        { "question": "data.filtering.required", "is": "true" },
+        { "question": "data.volume.high", "is": "true" }
+      ]
+    },
+    "decision": "filtering",
+    "recommend": ["none"],
+    "reason": "A small set that users don't need to narrow is clearer without filter controls."
+  }
+]

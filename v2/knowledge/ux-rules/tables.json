@@ -1,0 +1,112 @@
+[
+  {
+    "id": "tables.volume-high.table",
+    "code": "DATA_VOLUME_HIGH",
+    "category": "tables",
+    "tier": "task",
+    "priority": "high",
+    "when": {
+      "all": [{ "question": "data.volume.high", "is": "true" }],
+      "none": [{ "question": "data.records.visual", "is": "true" }]
+    },
+    "decision": "dataPresentation",
+    "recommend": ["data-table"],
+    "avoid": ["card-grid"],
+    "reason": "Many text-and-number records are scanned fastest in rows and columns; cards fit far fewer records per screen.",
+    "source": "NN/g: Data Tables: Four Major User Tasks"
+  },
+  {
+    "id": "tables.comparison.table",
+    "code": "COMPARISON_REQUIRED",
+    "category": "tables",
+    "tier": "task",
+    "priority": "high",
+    "when": { "all": [{ "question": "data.comparison.required", "is": "true" }] },
+    "decision": "dataPresentation",
+    "recommend": ["data-table"],
+    "avoid": ["card-grid", "list"],
+    "reason": "Comparing attributes across records needs aligned columns; cards and lists break that alignment.",
+    "source": "NN/g: Comparison Tables"
+  },
+  {
+    "id": "tables.density-high.table",
+    "code": "INFO_DENSITY_HIGH",
+    "category": "tables",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "data.density.need", "scoreGte": 1.5 }] },
+    "decision": "dataPresentation",
+    "recommend": ["data-table"],
+    "avoid": ["list"],
+    "reason": "Six or more attributes per record at a glance need a column layout to stay readable."
+  },
+  {
+    "id": "tables.visual-records.cards",
+    "code": "VISUAL_RECORDS",
+    "category": "tables",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "data.records.visual", "is": "true" }] },
+    "decision": "dataPresentation",
+    "recommend": ["card-grid"],
+    "reason": "Records recognized by images need room for a visual preview, which cards provide."
+  },
+  {
+    "id": "tables.staged-records.kanban",
+    "code": "STAGED_RECORDS",
+    "category": "tables",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "data.structure.kind", "choice": "ordered-stages" }] },
+    "decision": "dataPresentation",
+    "recommend": ["kanban"],
+    "reason": "Records that move through ordered stages are easiest to track as columns per stage."
+  },
+  {
+    "id": "tables.time-ordered.timeline",
+    "code": "TIME_ORDERED_RECORDS",
+    "category": "tables",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "data.structure.kind", "choice": "time-ordered-events" }] },
+    "decision": "dataPresentation",
+    "recommend": ["timeline"],
+    "reason": "When records matter mainly by when they happened, a timeline makes order and gaps visible."
+  },
+  {
+    "id": "tables.volume-high.paginate",
+    "code": "PAGINATION_HIGH_VOLUME",
+    "category": "tables",
+    "tier": "task",
+    "priority": "high",
+    "when": { "all": [{ "question": "data.volume.high", "is": "true" }] },
+    "decision": "pagination",
+    "recommend": ["paginated"],
+    "avoid": ["none"],
+    "reason": "Loading every record at once is slow and disorienting at high volume; pages keep position and load time predictable."
+  },
+  {
+    "id": "tables.sorting.avoid-infinite-scroll",
+    "code": "SORTED_LIST_POSITION",
+    "category": "tables",
+    "tier": "task",
+    "priority": "low",
+    "when": { "all": [{ "question": "data.sorting.required", "is": "true" }] },
+    "decision": "pagination",
+    "avoid": ["infinite-scroll"],
+    "reason": "With sorted records users need to return to a known position; infinite scroll loses it on reload."
+  },
+  {
+    "id": "tables.bulk-actions.bar",
+    "code": "BULK_ACTIONS_REQUIRED",
+    "category": "tables",
+    "tier": "task",
+    "priority": "high",
+    "when": { "all": [{ "question": "task.bulk-actions.required", "is": "true" }] },
+    "decision": "bulkActions",
+    "recommend": ["bulk-action-bar"],
+    "avoid": ["none"],
+    "reason": "Applying one action to many records one at a time is slow and error-prone; select-then-act is faster.",
+    "source": "NN/g: Bulk Actions"
+  }
+]

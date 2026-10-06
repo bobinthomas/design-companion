@@ -1,0 +1,72 @@
+[
+  {
+    "id": "accessibility.status.not-color-only",
+    "code": "STATUS_NOT_COLOR_ONLY",
+    "category": "accessibility",
+    "tier": "accessibility",
+    "priority": "high",
+    "when": { "all": [{ "question": "task.exceptions.important", "is": "true" }] },
+    "requiresCapabilities": ["status-badge"],
+    "reason": "Flags and statuses must carry a text label, not color alone, so everyone can spot problem records.",
+    "source": "WCAG 2.2 SC 1.4.1 Use of Color"
+  },
+  {
+    "id": "accessibility.infinite-scroll.keyboard",
+    "code": "REACHABLE_CONTENT",
+    "category": "accessibility",
+    "tier": "accessibility",
+    "priority": "medium",
+    "when": { "all": [{ "question": "data.volume.high", "is": "true" }] },
+    "decision": "pagination",
+    "avoid": ["infinite-scroll"],
+    "reason": "Infinite scroll keeps pushing content away from keyboard and screen-reader users and makes the footer unreachable.",
+    "source": "WCAG 2.2 SC 2.1.1 Keyboard, SC 2.4.1 Bypass Blocks"
+  },
+  {
+    "id": "accessibility.errors.persistent",
+    "code": "ERRORS_PERSISTENT",
+    "category": "accessibility",
+    "tier": "accessibility",
+    "priority": "high",
+    "when": { "all": [{ "question": "task.data-entry.heavy", "is": "true" }] },
+    "decision": "statusFeedback",
+    "avoid": ["toast"],
+    "reason": "Input errors must stay visible and be associated with their field; a disappearing toast fails both.",
+    "source": "WCAG 2.2 SC 3.3.1 Error Identification"
+  },
+  {
+    "id": "accessibility.time-pressure.no-auto-dismiss",
+    "code": "TIMING_ADJUSTABLE",
+    "category": "accessibility",
+    "tier": "accessibility",
+    "priority": "high",
+    "when": { "all": [{ "question": "task.time-pressure", "scoreGte": 1.5 }] },
+    "decision": "statusFeedback",
+    "avoid": ["toast"],
+    "reason": "Under time pressure, messages that vanish on a timer get missed; important feedback must persist until dismissed.",
+    "source": "WCAG 2.2 SC 2.2.1 Timing Adjustable"
+  },
+  {
+    "id": "accessibility.kanban.keyboard-alternative",
+    "code": "DRAG_ALTERNATIVE",
+    "category": "accessibility",
+    "tier": "accessibility",
+    "priority": "high",
+    "when": { "all": [{ "question": "data.structure.kind", "choice": "ordered-stages" }] },
+    "requiresCapabilities": ["overflow-menu"],
+    "reason": "Moving cards between stages by drag alone excludes keyboard and switch users; a menu action must do the same.",
+    "source": "WCAG 2.2 SC 2.5.7 Dragging Movements"
+  },
+  {
+    "id": "accessibility.destructive.focus-safe",
+    "code": "SAFE_DEFAULT_FOCUS",
+    "category": "accessibility",
+    "tier": "accessibility",
+    "priority": "high",
+    "when": { "all": [{ "question": "action.destructive.present", "is": "true" }] },
+    "requiresStates": ["focus"],
+    "requiresCapabilities": ["destructive-action"],
+    "reason": "Destructive buttons need a distinct, non-color-only treatment and must never be the default focused action.",
+    "source": "WCAG 2.2 SC 1.4.1, SC 2.4.7 Focus Visible"
+  }
+]

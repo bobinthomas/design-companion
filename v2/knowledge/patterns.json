@@ -1,0 +1,109 @@
+[
+  {
+    "id": "data-table",
+    "name": "Data Table",
+    "purpose": "Review and manipulate large structured datasets",
+    "requiredCapabilities": ["tabular-display", "sorting"],
+    "optionalCapabilities": ["row-selection", "pagination", "bulk-action-bar", "inline-row-actions", "column-customization"],
+    "requiredStates": ["loading", "empty", "error", "populated"],
+    "recommendedWhen": [
+      { "question": "data.volume.high", "is": "true" },
+      { "question": "data.comparison.required", "is": "true" },
+      { "question": "data.sorting.required", "is": "true" }
+    ],
+    "fitsDecisions": [{ "decision": "dataPresentation", "choices": ["data-table"] }],
+    "composesWith": ["filtering", "search", "detail-page", "empty-state"],
+    "antiPatterns": ["Horizontal scrolling to reach the primary action", "Truncating the column users compare on"]
+  },
+  {
+    "id": "filtering",
+    "name": "Filtering",
+    "purpose": "Narrow a record set by attribute values",
+    "requiredCapabilities": ["filter-controls"],
+    "optionalCapabilities": ["side-drawer", "status-badge"],
+    "requiredStates": ["default", "active", "empty"],
+    "recommendedWhen": [{ "question": "data.filtering.required", "is": "true" }],
+    "fitsDecisions": [{ "decision": "filtering", "choices": ["persistent-filter-bar", "filter-panel", "saved-views"] }],
+    "composesWith": ["data-table", "search", "empty-state"],
+    "antiPatterns": ["Hiding which filters are active", "Resetting filters on navigation"]
+  },
+  {
+    "id": "search",
+    "name": "Search",
+    "purpose": "Find specific known records by query",
+    "requiredCapabilities": ["search-input"],
+    "optionalCapabilities": ["searchable-select"],
+    "requiredStates": ["default", "loading", "empty"],
+    "recommendedWhen": [{ "question": "data.search.required", "is": "true" }],
+    "fitsDecisions": [{ "decision": "search", "choices": ["visible-search", "global-search"] }],
+    "composesWith": ["data-table", "filtering", "empty-state"],
+    "antiPatterns": ["Search that silently ignores active filters"]
+  },
+  {
+    "id": "detail-page",
+    "name": "Detail Page",
+    "purpose": "Inspect one record in depth",
+    "requiredCapabilities": [],
+    "optionalCapabilities": ["side-drawer", "breadcrumb-trail", "status-badge"],
+    "requiredStates": ["loading", "error", "populated"],
+    "recommendedWhen": [{ "question": "task.detail-in-context.required", "is": "true" }],
+    "fitsDecisions": [{ "decision": "detailView", "choices": ["side-panel", "full-page", "modal"] }],
+    "composesWith": ["data-table"],
+    "antiPatterns": ["Losing the list position when closing the detail"]
+  },
+  {
+    "id": "dashboard",
+    "name": "Dashboard",
+    "purpose": "Overview of aggregate state with entry points to detail",
+    "requiredCapabilities": ["metric-summary"],
+    "optionalCapabilities": ["data-visualization", "status-badge"],
+    "requiredStates": ["loading", "empty", "error", "populated"],
+    "recommendedWhen": [{ "question": "task.monitoring.aggregate", "is": "true" }],
+    "fitsDecisions": [{ "decision": "layout", "choices": ["dashboard"] }],
+    "composesWith": ["data-table", "empty-state"],
+    "antiPatterns": ["Metrics with no way to act on them"]
+  },
+  {
+    "id": "form",
+    "name": "Form",
+    "purpose": "Enter or edit information with validation",
+    "requiredCapabilities": ["text-input", "form-validation"],
+    "optionalCapabilities": ["single-select-dropdown", "multi-select-checkbox", "date-input"],
+    "requiredStates": ["default", "error", "success"],
+    "recommendedWhen": [{ "question": "task.data-entry.heavy", "is": "true" }],
+    "fitsDecisions": [{ "decision": "formStructure", "choices": ["single-page-form", "inline-edit"] }],
+    "composesWith": ["wizard"],
+    "antiPatterns": ["Clearing entered data on error", "Placeholder text used as the only label"]
+  },
+  {
+    "id": "wizard",
+    "name": "Wizard",
+    "purpose": "Complete a long or ordered task one step at a time",
+    "requiredCapabilities": ["step-indicator", "form-validation"],
+    "optionalCapabilities": ["text-input"],
+    "requiredStates": ["default", "error", "success"],
+    "recommendedWhen": [{ "question": "task.multi-step.required", "is": "true" }],
+    "fitsDecisions": [
+      { "decision": "layout", "choices": ["multi-step"] },
+      { "decision": "formStructure", "choices": ["wizard"] },
+      { "decision": "navigation", "choices": ["stepper"] }
+    ],
+    "composesWith": ["form"],
+    "antiPatterns": ["Steps that can't be revisited", "Unknown total number of steps"]
+  },
+  {
+    "id": "empty-state",
+    "name": "Empty State",
+    "purpose": "Explain an empty view and offer the next step",
+    "requiredCapabilities": ["empty-state-display"],
+    "optionalCapabilities": ["primary-action"],
+    "requiredStates": ["empty"],
+    "recommendedWhen": [
+      { "question": "data.filtering.required", "is": "true" },
+      { "question": "data.search.required", "is": "true" }
+    ],
+    "fitsDecisions": [],
+    "composesWith": ["data-table", "filtering", "search"],
+    "antiPatterns": ["A blank area with no explanation"]
+  }
+]

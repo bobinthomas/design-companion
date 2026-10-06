@@ -1,0 +1,74 @@
+[
+  {
+    "id": "navigation.single-screen.none",
+    "code": "SINGLE_SCREEN",
+    "category": "navigation",
+    "tier": "visual",
+    "priority": "low",
+    "when": {
+      "all": [{ "question": "app.sections.count", "choice": "single-focused-screen" }],
+      "none": [{ "question": "task.multi-step.required", "is": "true" }]
+    },
+    "decision": "navigation",
+    "recommend": ["none"],
+    "reason": "A single focused screen needs no in-product navigation of its own."
+  },
+  {
+    "id": "navigation.few-sections.tabs",
+    "code": "PEER_SECTIONS",
+    "category": "navigation",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [{ "question": "app.sections.count", "choice": "few-peer-sections" }],
+      "none": [{ "question": "device.mobile.likely", "is": "true" }]
+    },
+    "decision": "navigation",
+    "recommend": ["tabs"],
+    "reason": "Two to five peer sections switched in place are what tabs are for."
+  },
+  {
+    "id": "navigation.many-sections.sidebar",
+    "code": "DEEP_APP_NAVIGATION",
+    "category": "navigation",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [{ "question": "app.sections.count", "choice": "many-deep-sections" }],
+      "none": [{ "question": "device.mobile.likely", "is": "true" }]
+    },
+    "decision": "navigation",
+    "recommend": ["sidebar"],
+    "avoid": ["tabs"],
+    "reason": "Many sections don't fit in tabs; a persistent sidebar scales and shows where users are."
+  },
+  {
+    "id": "navigation.mobile.bottom-nav",
+    "code": "MOBILE_PRIMARY_NAV",
+    "category": "responsive",
+    "tier": "technical",
+    "priority": "medium",
+    "when": {
+      "all": [{ "question": "device.mobile.likely", "is": "true" }],
+      "any": [
+        { "question": "app.sections.count", "choice": "few-peer-sections" },
+        { "question": "app.sections.count", "choice": "many-deep-sections" }
+      ]
+    },
+    "decision": "navigation",
+    "recommend": ["bottom-nav"],
+    "avoid": ["sidebar"],
+    "reason": "On phones, primary destinations belong within thumb reach at the bottom of the screen."
+  },
+  {
+    "id": "navigation.multi-step.stepper",
+    "code": "STEP_PROGRESS",
+    "category": "navigation",
+    "tier": "task",
+    "priority": "high",
+    "when": { "all": [{ "question": "task.multi-step.required", "is": "true" }] },
+    "decision": "navigation",
+    "recommend": ["stepper"],
+    "reason": "In a multi-step task, users need to see where they are, what's done and what's left."
+  }
+]

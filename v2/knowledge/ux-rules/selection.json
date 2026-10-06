@@ -1,0 +1,79 @@
+[
+  {
+    "id": "selection.multiple.checkbox",
+    "code": "MULTI_SELECT_INDEPENDENT",
+    "category": "selection",
+    "tier": "task",
+    "priority": "high",
+    "when": { "all": [{ "question": "selection.mode", "choice": "several-independent" }] },
+    "decision": "selection",
+    "recommend": ["checkbox"],
+    "avoid": ["radio", "segmented-control"],
+    "reason": "Multiple independent selections are required; radios and segments allow only one.",
+    "source": "NN/g: Checkboxes vs. Radio Buttons"
+  },
+  {
+    "id": "selection.single-few.radio",
+    "code": "SINGLE_SELECT_FEW",
+    "category": "selection",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [
+        { "question": "selection.mode", "choice": "one-of-several" },
+        { "question": "selection.option-count", "choice": "two-to-five-options" }
+      ]
+    },
+    "decision": "selection",
+    "recommend": ["radio"],
+    "avoid": ["select"],
+    "reason": "With few options, showing them all lets users compare without opening a menu."
+  },
+  {
+    "id": "selection.single-some.select",
+    "code": "SINGLE_SELECT_MODERATE",
+    "category": "selection",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [
+        { "question": "selection.mode", "choice": "one-of-several" },
+        { "question": "selection.option-count", "choice": "six-to-fifteen-options" }
+      ]
+    },
+    "decision": "selection",
+    "recommend": ["select"],
+    "avoid": ["radio", "segmented-control"],
+    "reason": "Six to fifteen options take too much space as radios; a dropdown keeps them compact."
+  },
+  {
+    "id": "selection.single-many.combobox",
+    "code": "SINGLE_SELECT_MANY",
+    "category": "selection",
+    "tier": "task",
+    "priority": "high",
+    "when": {
+      "all": [
+        { "question": "selection.mode", "choice": "one-of-several" },
+        { "question": "selection.option-count", "choice": "more-than-fifteen-options" }
+      ]
+    },
+    "decision": "selection",
+    "recommend": ["combobox"],
+    "avoid": ["radio", "segmented-control"],
+    "reason": "Scrolling through more than fifteen options is slow; typing to filter finds the one users want."
+  },
+  {
+    "id": "selection.setting.toggle",
+    "code": "IMMEDIATE_SETTING",
+    "category": "selection",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "selection.mode", "choice": "on-off-setting" }] },
+    "decision": "selection",
+    "recommend": ["toggle"],
+    "avoid": ["checkbox"],
+    "reason": "A single setting that takes effect immediately is a switch; a checkbox implies a later save.",
+    "source": "NN/g: Toggle-Switch Guidelines"
+  }
+]

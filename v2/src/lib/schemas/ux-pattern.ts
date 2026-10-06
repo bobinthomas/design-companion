@@ -12,7 +12,8 @@ export const uxPatternSchema = z.object({
   id: kebabIdSchema,
   name: z.string().min(1),
   purpose: z.string().min(1),
-  requiredCapabilities: z.array(kebabIdSchema).min(1),
+  // May be empty, e.g. a full-page detail view needs no specific capability.
+  requiredCapabilities: z.array(kebabIdSchema).default([]),
   optionalCapabilities: z.array(kebabIdSchema).default([]),
   requiredStates: z.array(stateSchema).min(1),
   /** Evidence that makes this pattern a good fit (same condition grammar as rules). */

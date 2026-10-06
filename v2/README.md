@@ -32,30 +32,31 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 5. [Core contracts](#core-contracts)
 6. [The UX state](#the-ux-state)
 7. [Decision-model layer](#decision-model-layer)
-8. [Design System Intelligence](#design-system-intelligence)
-9. [Knowledge base](#knowledge-base)
-10. [API reference](#api-reference)
-11. [User interface](#user-interface)
-12. [Testing](#testing)
-13. [Deployment](#deployment)
-14. [Project structure](#project-structure)
-15. [Design decisions](#design-decisions)
-16. [Known limitations](#known-limitations)
-17. [Roadmap](#roadmap)
+8. [UX Policy](#ux-policy)
+9. [Design System Intelligence](#design-system-intelligence)
+10. [Knowledge base](#knowledge-base)
+11. [API reference](#api-reference)
+12. [User interface](#user-interface)
+13. [Testing](#testing)
+14. [Deployment](#deployment)
+15. [Project structure](#project-structure)
+16. [Design decisions](#design-decisions)
+17. [Known limitations](#known-limitations)
+18. [Roadmap](#roadmap)
 
 ---
 
 ## Status
 
-V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–3 are complete** on the `v2` branch.
+V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–4 are complete** on the `v2` branch.
 
 | # | Milestone | Status |
 |---|---|---|
 | 1 | Contracts: Zod schemas for every intermediate representation, app scaffold, Worker config | ✅ Done |
 | 2 | Decision infrastructure: `DecisionProvider`, Jev / LLM / mock adapters, question registry, confidence policy, quota | ✅ Done |
 | 3 | Design System Intelligence: capability vocabulary, normalizer, capability mapping, gap detection, registry APIs | ✅ Done |
-| 4 | UX Policy: rule engine, policy engine, pattern and component resolvers | Next |
-| 5 | Knowledge base: 30–50 UX rules, 10–15 patterns | Planned |
+| 4 | UX Policy: rule engine, policy engine, pattern and component resolvers, 43 rules, 8 patterns, expense-dashboard golden test | ✅ Done |
+| 5 | Knowledge base: patterns to 14, forms/content/responsive rules, designer review of all rules | Next |
 | 6 | UX Analyze + Decision Inspector + overrides + audit trail | Planned |
 | 7 | Decision-guided Layout Brainstorm | Planned |
 | 8 | UX Evaluation + Compare Solutions | Planned |
@@ -63,9 +64,9 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 | 10 | Benchmark (LLM-only vs LLM + design system vs decision-guided), docs, deploy | Planned |
 
 **What works today:**
-- Every backend layer through Design System Intelligence, exposed as JSON APIs.
+- The full deterministic pipeline, from UX state to decisions, patterns, components and design-system gaps, exposed as JSON APIs (`POST /api/ux/decide`).
 - The Settings screen.
-- 87 passing tests.
+- 164 passing tests.
 
 The designer-facing screens (UX Analyze, Evaluate, Copy, Feedback, Knowledge, Design System Review) start in Milestone 6. Until then their header links lead to 404 pages.
 
@@ -165,7 +166,7 @@ Designer brief
        │  typed DecisionResults with confidence + provenance
        ▼
 ┌──────────────────────────────┐
-│ UX POLICY            (M4)    │   rules over results + hard facts,
+│ UX POLICY                    │   rules over results + hard facts,
 │                              │   §13 tier order, critical vetoes
 └──────┬───────────────────────┘
        │  UXDecisions + CapabilityRequirements
@@ -336,6 +337,128 @@ A noul result counts as *true* at 0.7 or above and *false* at 0.3 or below. Rule
 
 ---
 
+## UX Policy
+
+[src/lib/ux/](src/lib/ux/)
+
+The policy layer turns the decision model's judgments into application decisions (PRD §11). **It calls no model.** Given the same state, results, overrides and knowledge, it always produces the same outcome. [pipeline.ts](src/lib/ux/pipeline.ts) runs it end to end:
+
+```text
+results ─► fireRules ─► decide ─► resolvePatterns ─► buildRequirements ─► detectGaps ─► resolveComponents
+  (Jev)     (rules)    (policy)    (patterns)          (capabilities)       (design      (components)
+                                                                             system)
+```
+
+`runPolicy({ state, questions, results, overrides?, designSystem?, rules? })` returns a `PolicyOutcome`, validated by `policyOutcomeSchema`:
+
+| Field | Contents |
+|---|---|
+| `decisions` | One `UXDecision` per slot in play |
+| `requirements` | Capability requirements from decisions, rules and patterns |
+| `requiredStates` | States the solution must represent (from rules and patterns) |
+| `patterns` | Matched patterns, primary first |
+| `components` | Registry components selected, with the capabilities each serves |
+| `resolutions`, `gaps`, `blocked` | Design-system resolution, gaps with their policy behavior, whether generation is blocked |
+| `warnings` | e.g. an override that contradicts a critical rule |
+| `rulesFired` | Every rule that matched, with its evidence |
+| `versions` | Everything the outcome depends on (§30) |
+
+### Rule engine
+
+[rules/evaluate.ts](src/lib/ux/rules/evaluate.ts)
+- `evaluateCondition()` judges one condition against the question results or hard-constraint facts. Noul results use the policy threshold or a per-condition `min`. Choices can require a minimum probability. Ordinal facts compare positions on their scale.
+- **A question with no result never matches.** Absent evidence is not evidence.
+- `evaluateWhen()` applies `all` / `any` / `none` and cites the evidence that made the clause match, including non-matches in `none` (e.g. "records are *not* visual").
+- `fireRules()` returns every matching rule with its evidence.
+
+### Policy engine
+
+[policy/engine.ts](src/lib/ux/policy/engine.ts). `decide()` fills each decision slot that is **in play**: a rule speaks to it, a decision-linked choice question answered it, or the designer overrode it. Slots nothing speaks to are left undecided rather than guessed.
+
+**Scoring.** Every option gets a score per §13 tier:
+
+| Input | Effect |
+|---|---|
+| Rule recommends an option | + priority weight at the rule's tier (critical 3, high 2, medium 1, low 0.5) |
+| Rule avoids an option | − priority weight at the rule's tier |
+| **Critical** rule avoids an option | **Veto**: the option is ruled out entirely |
+| Decision-linked choice question (prior) | + probability × 1.0 at the task tier |
+| Design system can't build an option | − 0.5 (partial) or − 1 (unconfirmed / missing) per required capability, **at the design-system tier only** |
+
+**Ranking: lexicographic by tier, with a tie tolerance.** Starting from accessibility and moving down through task, business, technical, design-system and visual, the candidates are narrowed to those within 0.25 of the best score at each tier. Remaining ties go to the higher total, then to vocabulary order. This guarantees that:
+- **a lower tier can never outvote a higher one.** No number of visual-tier rules beats one accessibility rule; there's a test for this.
+- **the design-system tier can only break genuine ties.** If two options are equally good for the task, the one the design system can build wins. A clear task preference still wins and is reported as a gap.
+
+The ordering is transitive, so the full ranking of alternatives is well-defined.
+
+**Confidence.**
+- *When rules decided:* the mean confidence of the evidence behind the winning rules, multiplied by a margin factor. The factor is `min(1, 0.7 + 0.15 × margin)`, where the margin is the winner's lead over the runner-up at the first tier that separates them.
+- *When only the decision model spoke:* its own probability for the winner.
+- *When nothing spoke:* 0.5.
+- The result is banded `proceed` / `uncertain` / `needs-review` (§15).
+
+**Source.** `rule` if any rule contributed, `decision-model` if only the prior did, `designer` if overridden, `default` otherwise.
+
+**Explanations.**
+- **Reasons** are the reasons of the rules recommending the winner, plus the decision model's rating when it agrees.
+- **Alternatives** are only options something actually argued about, never options penalized solely for being unbuildable. Each says why it lost: the veto with its rule code, the avoiding rules' reasons, "your design system can't fully build it", a lower decision-model rating, or less rule support.
+
+**Overrides (§16).**
+- The chosen option is replaced, the source becomes `designer` and confidence 1, and the system's choice moves to the top of the alternatives.
+- The full override record is kept: decision id, system choice, designer choice, reason, timestamp and actor.
+- **Overrides never change rules.** The rules that argued for the system's choice stay on record, and requirements are recomputed for the new choice.
+- An override that picks a vetoed option is allowed, because the designer has final authority, but it produces a warning naming the critical rule. An override to an option that isn't in the slot is ignored, with a warning.
+
+**Requirement priority.** A decision's capability requirements inherit the priority and tier of the strongest rule that recommended the chosen option. For example, `DESTRUCTIVE_PROTECTED` is critical and recommends both `confirm-dialog` and `undo-toast`, so either choice yields a critical requirement.
+
+### Pattern resolver
+
+[patterns/resolve.ts](src/lib/ux/patterns/resolve.ts) scores each registry pattern on two equally weighted parts:
+- the fraction of its `recommendedWhen` conditions that match;
+- the fraction of its `fitsDecisions` that the policy actually chose.
+
+Patterns scoring 0.5 or more are included. The best fit is `primary`; ties go to more matched decisions, then more matched conditions. The rest are `supporting`.
+
+### Requirements and component resolver
+
+- [policy/requirements.ts](src/lib/ux/policy/requirements.ts) collects capability requirements from three sources:
+  - **chosen decisions**, with inherited priority;
+  - **fired rules' `requiresCapabilities`**;
+  - **pattern `requiredCapabilities`**: high for the primary pattern, medium for supporting ones.
+
+  Rules' `requiresStates` apply to the solution as a whole (`requiredStates`), not to each capability.
+- [components/resolve.ts](src/lib/ux/components/resolve.ts) derives the component list only from capability resolutions: the strongest provider for satisfied capabilities, and one provider per part for composites. **Components are never named by an LLM.**
+
+### Golden test: expense-review dashboard
+
+With the mock decision provider and the default design system, *"Design an expense-review dashboard for managers"* produces:
+
+| Decision | Choice | Confidence | Band | Key rules |
+|---|---|---|---|---|
+| Data presentation | data-table | 0.87 | proceed | DATA_VOLUME_HIGH, COMPARISON_REQUIRED, INFO_DENSITY_HIGH |
+| Detail view | side-panel | 0.88 | proceed | CONTEXT_PRESERVATION |
+| Search | visible-search | 0.88 | proceed | SEARCH_REQUIRED |
+| Filtering | persistent-filter-bar | 0.88 | proceed | FILTER_REQUIRED |
+| Bulk actions | bulk-action-bar | 0.88 | proceed | BULK_ACTIONS_REQUIRED |
+| Pagination | paginated | 0.88 | proceed | PAGINATION_HIGH_VOLUME, REACHABLE_CONTENT (avoid infinite scroll) |
+| Action confirmation | confirm-dialog | 0.87 | proceed | DESTRUCTIVE_PROTECTED (vetoes `none`), IRREVERSIBLE_CONFIRM, HIGH_ERROR_COST |
+| Layout | split-view | 0.83 | uncertain | LIST_DETAIL_WORKFLOW + decision-model prior |
+| Status feedback | toast | 0.81 | uncertain | ASYNC_OUTCOME, BULK_RESULT_SUMMARY |
+| Navigation | none | 0.61 | needs-review | SINGLE_SCREEN (one low-priority rule) |
+
+- **Patterns:** Data Table (primary), with Filtering, Search, Detail Page and Empty State supporting.
+- **Components:** DataTable, Drawer, SearchField, Select, Button, Pagination, Dialog, Toast, Badge, EmptyState.
+- **Design system:** zero gaps, not blocked.
+- **Against the Acme design system:** blocked on destructive confirmation. A designer override to `undo-toast` unblocks it.
+
+Two things to notice:
+- The system chose **split-view**, not "dashboard", even though the brief says *dashboard*: the evidence is about reviewing records, not monitoring metrics.
+- The thinly supported navigation decision is correctly flagged for review.
+
+With real Jev confidences (e.g. 0.97 / 0.91) the data-table decision lands around the PRD's example of 94%.
+
+---
+
 ## Design System Intelligence
 
 [src/lib/design-system/](src/lib/design-system/)
@@ -489,14 +612,47 @@ Everything in [knowledge/](knowledge/) is validated at module load by [src/lib/k
 
 | File | Contents |
 |---|---|
-| `manifest.json` | Versions: question set 1.0.0, policy 1.1.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.0.0. Rules, patterns and evaluator stay at 0.0.0 until written |
-| `policy.json` | Confidence thresholds (0.85 / 0.65), noul threshold (0.7), quota (2/IP/day), gap behaviors, capability-mapping confidences and question cap |
+| `manifest.json` | Versions: question set 1.0.0, rules 0.1.0, policy 1.2.0, patterns 0.1.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.0.0. The evaluator stays at 0.0.0 until written; rules and patterns reach 1.0.0 after the Milestone 5 review |
+| `policy.json` | Confidence thresholds (0.85 / 0.65), noul threshold (0.7), quota (2/IP/day), gap behaviors, capability-mapping confidences and question cap, and **ranking**: tie tolerance 0.25, prior weight 1, priority weights (3 / 2 / 1 / 0.5), design-system penalties, max 3 alternatives |
+| `ux-rules/*.json` | **43 UX rules** in 9 files: accessibility, tables, filtering, search, layout, error-prevention, feedback, navigation, selection |
+| `patterns.json` | **8 UX patterns**, defined by capabilities |
 | `questions/analysis.json` | **27 analysis questions** (18 noul, 6 choice, 3 score) |
 | `capabilities.json` | **50 capabilities** in 6 categories, each with acceptance criteria, required states and accessibility obligations |
 | `compositions.json` | **6 composition recipes** |
 | `decision-capabilities.json` | For every option of every decision slot, the capabilities it needs. Validated to cover exactly the vocabulary |
 | `normalization.json` | Alias tables: 40 components (with implied capabilities), 10 variants, 15 states, 7 prop-hint groups |
 | `design-systems/default.json` | The bundled default design system: **36 components**, tokens in all three tiers and seven categories |
+
+### UX rules
+
+| File | Rules (code: what it does) |
+|---|---|
+| `accessibility.json` | STATUS_NOT_COLOR_ONLY: status badges with text (SC 1.4.1) · REACHABLE_CONTENT: avoid infinite scroll (SC 2.1.1 / 2.4.1) · ERRORS_PERSISTENT: no toasts for input errors (SC 3.3.1) · TIMING_ADJUSTABLE: no auto-dismissing feedback under time pressure (SC 2.2.1) · DRAG_ALTERNATIVE: menu alternative to dragging (SC 2.5.7) · SAFE_DEFAULT_FOCUS: destructive buttons never the default focus (SC 1.4.1 / 2.4.7) |
+| `tables.json` | DATA_VOLUME_HIGH, COMPARISON_REQUIRED, INFO_DENSITY_HIGH: data table · VISUAL_RECORDS: cards · STAGED_RECORDS: kanban · TIME_ORDERED_RECORDS: timeline · PAGINATION_HIGH_VOLUME: paginate · SORTED_LIST_POSITION: avoid infinite scroll · BULK_ACTIONS_REQUIRED: bulk action bar |
+| `filtering.json` | FILTER_REQUIRED: persistent filter bar for frequent use · FILTER_OCCASIONAL: filter panel · FILTER_UNNECESSARY: no filters for small sets |
+| `search.json` | SEARCH_REQUIRED: visible search · GLOBAL_SEARCH_DEEP_APP: global search across many sections |
+| `layout.json` | CONTEXT_PRESERVATION: side panel · LIST_DETAIL_WORKFLOW: split view · AGGREGATE_MONITORING: dashboard · MULTI_STEP_TASK: multi-step · SMALL_SCREEN_SPLIT_VIEW: no split view on phones |
+| `error-prevention.json` | DESTRUCTIVE_PROTECTED: confirm or undo, **vetoes `none`** (critical) · IRREVERSIBLE_CONFIRM: confirm, not undo · REVERSIBLE_UNDO: undo, not confirm · HIGH_ERROR_COST: confirm |
+| `feedback.json` | ASYNC_OUTCOME: toast · BULK_RESULT_SUMMARY: toast · INLINE_VALIDATION: inline message · DATA_STATES_REQUIRED: loading / empty / error states plus an empty-state capability |
+| `navigation.json` | SINGLE_SCREEN: none · PEER_SECTIONS: tabs · DEEP_APP_NAVIGATION: sidebar · MOBILE_PRIMARY_NAV: bottom nav · STEP_PROGRESS: stepper |
+| `selection.json` | MULTI_SELECT_INDEPENDENT: checkbox · SINGLE_SELECT_FEW: radio · SINGLE_SELECT_MODERATE: select · SINGLE_SELECT_MANY: combobox · IMMEDIATE_SETTING: toggle |
+
+Rules cite their sources (WCAG success criteria, NN/g, Nielsen's heuristics) where one applies.
+
+### UX patterns
+
+| Pattern | Required capabilities | Fits decisions |
+|---|---|---|
+| Data Table | tabular-display, sorting | dataPresentation = data-table |
+| Filtering | filter-controls | filtering = persistent-filter-bar / filter-panel / saved-views |
+| Search | search-input | search = visible-search / global-search |
+| Detail Page | (none) | detailView = side-panel / full-page / modal |
+| Dashboard | metric-summary | layout = dashboard |
+| Form | text-input, form-validation | formStructure = single-page-form / inline-edit |
+| Wizard | step-indicator, form-validation | layout = multi-step, formStructure = wizard, navigation = stepper |
+| Empty State | empty-state-display | — |
+
+Each pattern also lists optional capabilities, required states, the conditions that recommend it, the patterns it composes with, and anti-patterns.
 
 ### Analysis questions
 
@@ -552,6 +708,41 @@ Endpoints that may call a decision model also accept optional credentials from S
   "clientConfig": { "provider": "anthropic", "apiKey": "…", "model": "…" } // own LLM
 }
 ```
+
+### `POST /api/ux/decide`
+
+The full pipeline: decision model (unless results are supplied), then UX policy, patterns, requirements, design-system resolution, components and gaps.
+
+```jsonc
+// request
+{
+  "state": { /* UXState */ },
+  "results": [ /* optional: reuse an earlier run's results, so the model isn't called again */ ],
+  "overrides": [
+    { "decision": "actionConfirmation", "choice": "undo-toast", "reason": "Rejections are reversible within 24h" }
+  ],
+  "designSystem": { /* optional DesignSystem; defaults to the bundled one */ }
+}
+
+// response
+{
+  "state": { … }, "questions": [ … ], "results": [ … ],
+  "decisionModel": { "provider": "jev", "model": "jev-1.13.0", "notices": [], "quota": { … } },
+  "decisions": [
+    { "id": "decision.dataPresentation", "label": "Data presentation", "result": { "choice": "data-table", "confidence": 0.94 },
+      "band": "proceed", "source": "rule", "reasons": [ … ], "evidence": [ … ], "rulesApplied": [ … ],
+      "alternatives": [ { "choice": "card-grid", "vetoed": false, "reasonRejected": "…" } ],
+      "requiresCapabilities": ["tabular-display", "sorting"] }
+  ],
+  "patterns": [ { "pattern": "data-table", "role": "primary", "score": 1, … } ],
+  "requirements": [ … ], "requiredStates": [ … ],
+  "components": [ { "component": "data-table", "name": "DataTable", "serves": [ … ], "via": ["direct"] } ],
+  "resolutions": [ … ], "gaps": [ … ], "blocked": false,
+  "warnings": [], "rulesFired": [ … ], "versions": { … }
+}
+```
+
+Designers re-run this endpoint with `overrides` and the earlier `results` to see the effect of a change without another Jev request.
 
 ### `POST /api/decision-model/evaluate`
 
@@ -663,7 +854,7 @@ Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V
 ## Testing
 
 ```bash
-npm test     # 6 suites, 87 tests
+npm test     # 9 suites, 164 tests
 ```
 
 | Suite | Covers |
@@ -673,6 +864,9 @@ npm test     # 6 suites, 87 tests
 | `tests/decision-model/providers.test.ts` | Mock determinism and plausible expense-dashboard judgments; Jev format mapping, REST envelope, label-keyed score levels, rejected tokens, mismatched answers; LLM probability normalization |
 | `tests/decision-model/evaluate.test.ts` | Confidence bands; quota per IP and day; the full fallback chain, including precedence of the visitor's token, failing closed without KV, refunds on failure, and falling through on errors |
 | `tests/design-system/knowledge.test.ts` | Capability, recipe, decision-capability and alias lint; default design system imports with zero findings, correct token tiers and categories, and covers the expense dashboard |
+| `tests/ux/knowledge.test.ts` | Rule and pattern lint: 30–50 rules, unique ids and codes; every condition references a real question with the right type, a real option and a reachable score; fact values are in the vocabulary; capabilities exist; accessibility rules are in the accessibility tier and cite WCAG |
+| `tests/ux/rules.test.ts` | Condition evaluation (noul thresholds and `min`, choices with minimum probability, scores, ordinal facts, missing results never matching) and `all` / `any` / `none` evidence |
+| `tests/ux/policy.test.ts` | The expense-dashboard **golden test** (5–10 decisions, expected choices, Inspector-ready explanations, the veto, the review flag, patterns, components, no gaps, critical requirement priority, determinism); overrides (record, rules kept, requirements recomputed, warnings); the §21f example through the full pipeline; and the §13 guarantees: visual rules can't outvote accessibility, the design-system tier breaks ties but not clear preferences, priors decide alone when no rule applies |
 | `tests/design-system/pipeline.test.ts` | Normalizer (names, states, variants, tokens, findings), capability mapping (declared, inferred, decision-model confirmation and rejection, designer review), and the full §21f worked example including override and accepted risk |
 
 Tests run against the deterministic mock and fake bindings, so they need no network or credentials.
@@ -705,6 +899,8 @@ v2/
 │   └── archive/                    PRD v2.0 and v2.1
 ├── knowledge/                      Versioned UX knowledge (validated at build)
 │   ├── manifest.json
+│   ├── ux-rules/*.json             43 rules in 9 files
+│   ├── patterns.json
 │   ├── policy.json
 │   ├── questions/analysis.json
 │   ├── capabilities.json
@@ -719,7 +915,8 @@ v2/
 │   │   ├── layout.tsx              Root layout + header
 │   │   └── api/
 │   │       ├── decision-model/{evaluate,quota}/route.ts
-│   │       └── design-system/{capabilities,default,import,map,gaps}/route.ts
+│   │       ├── design-system/{capabilities,default,import,map,gaps}/route.ts
+│   │       └── ux/decide/route.ts
 │   ├── components/
 │   │   ├── AppHeader.tsx
 │   │   └── CloudflareSettings.tsx
@@ -731,7 +928,14 @@ v2/
 │       ├── design-system/          Tokens, normalizer, capability mapping, import, registry, gaps, default
 │       ├── knowledge/              Loads and validates knowledge/
 │       ├── schemas/                All Zod contracts
-│       ├── ux/fixtures/            Expense-dashboard golden state
+│       ├── ux/
+│       │   ├── rules/evaluate.ts        Conditions, when clauses, rule firing
+│       │   ├── policy/engine.ts         Decisions: tier scoring, vetoes, priors, overrides, confidence
+│       │   ├── policy/requirements.ts   Capability requirements + required states
+│       │   ├── patterns/resolve.ts      Pattern matching
+│       │   ├── components/resolve.ts    Component selection from resolutions
+│       │   ├── pipeline.ts              runPolicy(): the deterministic pipeline
+│       │   └── fixtures/                Expense-dashboard golden state
 │       └── nav.ts                  Primary navigation
 ├── tests/                          Vitest suites + Acme design-system fixture
 ├── wrangler.jsonc                  Worker config: AI + KV bindings
@@ -778,7 +982,9 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 - **Mock judgments are keyword-based.** They're plausible for demos and tests but are not real judgment, and are labelled as such.
 - **Jev's real output may differ in detail.** The Jev adapter follows Cloudflare's documented output format, but hasn't yet been checked against a successful live response. Its parsing is deliberately tolerant (e.g. score levels keyed by label or index).
 - **The quota is a soft limit** because KV is eventually consistent.
-- **Composite resolution is one level deep.** A recipe part can't itself be a composite.
+- **Composite resolution is one level deep.** A recipe part can't itself be a composite. Composites are checked against each part's own required states, not extra states a requirement adds.
+- **The rules and patterns are a first draft.** They are UX knowledge and need a designer's review, which is planned for Milestone 5.
+- **Mock judgments shape the golden test.** With real Jev answers, confidences and some close calls (layout, status feedback, navigation) may differ.
 - **Only the JSON import exists.** Token files, Storybook, repository and Figma import (§37 phases 2–5) are later work.
 - **No designer-facing screens yet** beyond Home and Settings.
 - **PRD §33 types the provider's state as `UXState`;** the implementation accepts any object. The architecture doc will reflect this.
@@ -787,20 +993,12 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 
 ## Roadmap
 
-**Milestone 4, UX Policy (next):**
-- A rule engine that matches conditions against question results and hard facts.
-- A policy engine that:
-  - compares §13 tiers in strict order, so a lower tier can never outvote a higher one;
-  - uses decision-linked choice probabilities as the starting point;
-  - applies critical vetoes;
-  - emits `UXDecision`s with evidence, rules applied, alternatives and confidence bands.
-- Capability requirements emitted alongside the decisions.
-- A design-system penalty applied only at the design-system tier.
-- Pattern and component resolvers.
-- Golden test: the expense dashboard produces 5–10 decisions.
+**Milestone 5, Knowledge (next):**
+- Bring the pattern registry to 14: Checkout, Onboarding, Authentication, Settings, Comparison and CRUD.
+- Add forms, content and responsive rules.
+- Review every rule and pattern with a designer, then version rules and patterns 1.0.0.
 
 **Then:**
-- Milestone 5: the rule and pattern library.
 - Milestone 6: UX Analyze with the Decision Inspector, overrides and an exportable trace.
 - Milestone 7: constrained Layout Brainstorm (Task first / Exception first / Overview first).
 - Milestone 8: evaluation and Compare Solutions.

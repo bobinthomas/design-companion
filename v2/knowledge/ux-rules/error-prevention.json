@@ -1,0 +1,64 @@
+[
+  {
+    "id": "error-prevention.destructive.protect",
+    "code": "DESTRUCTIVE_PROTECTED",
+    "category": "error-prevention",
+    "tier": "task",
+    "priority": "critical",
+    "when": { "all": [{ "question": "action.destructive.present", "is": "true" }] },
+    "decision": "actionConfirmation",
+    "recommend": ["confirm-dialog", "undo-toast"],
+    "avoid": ["none"],
+    "reason": "Destructive actions must be either confirmed or undoable; leaving them unprotected invites costly slips.",
+    "source": "Nielsen heuristic 5: Error prevention"
+  },
+  {
+    "id": "error-prevention.irreversible.confirm",
+    "code": "IRREVERSIBLE_CONFIRM",
+    "category": "error-prevention",
+    "tier": "task",
+    "priority": "high",
+    "when": {
+      "all": [{ "question": "action.destructive.present", "is": "true" }],
+      "none": [{ "question": "action.destructive.reversible", "is": "true" }]
+    },
+    "decision": "actionConfirmation",
+    "recommend": ["confirm-dialog"],
+    "avoid": ["undo-toast"],
+    "reason": "When an action notifies others or triggers a process, undo can't take it back — confirm before it happens."
+  },
+  {
+    "id": "error-prevention.reversible.undo",
+    "code": "REVERSIBLE_UNDO",
+    "category": "error-prevention",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [
+        { "question": "action.destructive.present", "is": "true" },
+        { "question": "action.destructive.reversible", "is": "true" }
+      ]
+    },
+    "decision": "actionConfirmation",
+    "recommend": ["undo-toast"],
+    "avoid": ["confirm-dialog"],
+    "reason": "When an action can be undone cleanly, undo is faster than confirming and avoids confirmation fatigue.",
+    "source": "NN/g: Confirmation Dialogs Can Prevent User Errors (if not overused)"
+  },
+  {
+    "id": "error-prevention.high-cost.confirm",
+    "code": "HIGH_ERROR_COST",
+    "category": "error-prevention",
+    "tier": "business",
+    "priority": "medium",
+    "when": {
+      "all": [
+        { "question": "action.destructive.present", "is": "true" },
+        { "question": "risk.error-cost", "scoreGte": 1.5 }
+      ]
+    },
+    "decision": "actionConfirmation",
+    "recommend": ["confirm-dialog"],
+    "reason": "Mistakes here have money, legal or trust consequences; an explicit confirmation states the consequence before it happens."
+  }
+]

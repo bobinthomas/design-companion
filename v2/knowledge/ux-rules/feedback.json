@@ -1,0 +1,53 @@
+[
+  {
+    "id": "feedback.async-outcome.toast",
+    "code": "ASYNC_OUTCOME",
+    "category": "feedback",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "feedback.outcome.async", "is": "true" }] },
+    "decision": "statusFeedback",
+    "recommend": ["toast"],
+    "reason": "Outcomes that arrive later need a non-blocking notification wherever the user is when they finish."
+  },
+  {
+    "id": "feedback.bulk-result.toast",
+    "code": "BULK_RESULT_SUMMARY",
+    "category": "feedback",
+    "tier": "task",
+    "priority": "low",
+    "when": { "all": [{ "question": "task.bulk-actions.required", "is": "true" }] },
+    "decision": "statusFeedback",
+    "recommend": ["toast"],
+    "reason": "A bulk action's result is best summarized once (\"12 expenses approved\") without interrupting the next task."
+  },
+  {
+    "id": "feedback.data-entry.inline",
+    "code": "INLINE_VALIDATION",
+    "category": "feedback",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "task.data-entry.heavy", "is": "true" }] },
+    "decision": "statusFeedback",
+    "recommend": ["inline-message"],
+    "reason": "Errors in entered data belong next to the field they concern, where users can fix them.",
+    "source": "NN/g: Error-Message Guidelines"
+  },
+  {
+    "id": "feedback.states.required",
+    "code": "DATA_STATES_REQUIRED",
+    "category": "feedback",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "any": [
+        { "question": "data.volume.high", "is": "true" },
+        { "question": "data.filtering.required", "is": "true" },
+        { "question": "data.search.required", "is": "true" }
+      ]
+    },
+    "requiresStates": ["loading", "empty", "error"],
+    "requiresCapabilities": ["empty-state-display"],
+    "reason": "Lists that load, filter or search will be loading, empty or failing at some point; each state needs a designed response."
+  }
+]

@@ -6,6 +6,16 @@ import capabilitiesJson from "@knowledge/capabilities.json";
 import compositionsJson from "@knowledge/compositions.json";
 import decisionCapabilitiesJson from "@knowledge/decision-capabilities.json";
 import normalizationJson from "@knowledge/normalization.json";
+import patternsJson from "@knowledge/patterns.json";
+import accessibilityRulesJson from "@knowledge/ux-rules/accessibility.json";
+import errorPreventionRulesJson from "@knowledge/ux-rules/error-prevention.json";
+import feedbackRulesJson from "@knowledge/ux-rules/feedback.json";
+import filteringRulesJson from "@knowledge/ux-rules/filtering.json";
+import layoutRulesJson from "@knowledge/ux-rules/layout.json";
+import navigationRulesJson from "@knowledge/ux-rules/navigation.json";
+import searchRulesJson from "@knowledge/ux-rules/search.json";
+import selectionRulesJson from "@knowledge/ux-rules/selection.json";
+import tablesRulesJson from "@knowledge/ux-rules/tables.json";
 import {
   capabilityDefinitionSchema,
   compositionRecipeSchema,
@@ -13,10 +23,14 @@ import {
   decisionQuestionSchema,
   kebabIdSchema,
   semverSchema,
+  uxPatternSchema,
+  uxRuleSchema,
   type CapabilityDefinition,
   type CompositionRecipe,
   type DecisionQuestion,
   type DecisionType,
+  type UXPattern,
+  type UXRule,
 } from "@/lib/schemas";
 
 /**
@@ -59,6 +73,27 @@ export const policyConfigSchema = z
       inferredFromName: probability,
       inferredFromProps: probability,
       inferredFromNameAndProps: probability,
+    }),
+    /** UX policy ranking (§13): how evidence and rules turn into a choice. */
+    ranking: z.object({
+      /** Scores within this distance at a tier count as tied, letting the next tier decide. */
+      tieTolerance: z.number().min(0),
+      /** Weight of a decision-linked choice question's probability (task tier). */
+      priorWeight: z.number().min(0),
+      priorityWeights: z.object({
+        critical: z.number().positive(),
+        high: z.number().positive(),
+        medium: z.number().positive(),
+        low: z.number().positive(),
+      }),
+      /** Design-system-tier penalty per required capability, by resolution outcome. */
+      designSystemPenalty: z.object({
+        partial: z.number().min(0),
+        unconfirmed: z.number().min(0),
+        missing: z.number().min(0),
+      }),
+      maxAlternatives: z.number().int().min(0),
+      defaultRequirementPriority: z.enum(["critical", "high", "medium", "low"]),
     }),
   })
   .refine((p) => p.confidence.proceed > p.confidence.review, {
@@ -127,3 +162,19 @@ export const DECISION_CAPABILITIES = decisionCapabilitiesSchema.parse(
 ) as Record<DecisionType, Record<string, string[]>>;
 
 export const NORMALIZATION: NormalizationTables = normalizationSchema.parse(normalizationJson);
+
+/** The UX rule library (§12), one file per area, in evaluation order. */
+export const UX_RULES: readonly UXRule[] = z.array(uxRuleSchema).parse([
+  ...accessibilityRulesJson,
+  ...tablesRulesJson,
+  ...filteringRulesJson,
+  ...searchRulesJson,
+  ...layoutRulesJson,
+  ...errorPreventionRulesJson,
+  ...feedbackRulesJson,
+  ...navigationRulesJson,
+  ...selectionRulesJson,
+]);
+
+/** The UX pattern registry (§18). */
+export const UX_PATTERNS: readonly UXPattern[] = z.array(uxPatternSchema).parse(patternsJson);

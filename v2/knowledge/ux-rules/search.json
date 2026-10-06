@@ -1,0 +1,31 @@
+[
+  {
+    "id": "search.lookup.visible",
+    "code": "SEARCH_REQUIRED",
+    "category": "search",
+    "tier": "task",
+    "priority": "high",
+    "when": { "all": [{ "question": "data.search.required", "is": "true" }] },
+    "decision": "search",
+    "recommend": ["visible-search"],
+    "avoid": ["none"],
+    "reason": "Users who look up known records need a visible search field; hiding it behind an icon adds a step to a frequent task.",
+    "source": "NN/g: Search: Visible and Simple"
+  },
+  {
+    "id": "search.many-sections.global",
+    "code": "GLOBAL_SEARCH_DEEP_APP",
+    "category": "search",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [
+        { "question": "data.search.required", "is": "true" },
+        { "question": "app.sections.count", "choice": "many-deep-sections" }
+      ]
+    },
+    "decision": "search",
+    "recommend": ["global-search"],
+    "reason": "Across many sections, one global search finds records without users knowing where they live."
+  }
+]
