@@ -1,0 +1,199 @@
+[
+  {
+    "id": "eval.task.primary-central",
+    "purpose": "evaluation",
+    "category": "task-effectiveness",
+    "type": "noul",
+    "question": "Is the primary task at the centre of the solution?",
+    "instructions": "Compare the solution with the problem's primary task. Decide whether the solution makes that task the main focus: it is immediately reachable and gets the most prominent space, rather than being secondary to summaries, navigation or other content.",
+    "criteria": {
+      "true": "The primary task is immediately reachable and is the main focus of the solution",
+      "false": "The primary task is secondary, delayed or competes with other content for attention"
+    },
+    "mock": { "keywords": { "false": ["summary of the whole", "extra step before", "before the details"] }, "default": "true" }
+  },
+  {
+    "id": "eval.clarity.primary-action",
+    "purpose": "evaluation",
+    "category": "task-clarity",
+    "type": "noul",
+    "question": "Is the primary action easy to find?",
+    "instructions": "Decide whether a user would quickly find the main action they need to complete the primary task (for example approve, submit, continue) in this solution, without searching menus or scrolling past unrelated content.",
+    "criteria": {
+      "true": "The main action is visible and clearly the most prominent action where it is needed",
+      "false": "The main action is hidden, buried in menus, or not distinguishable from other actions"
+    },
+    "mock": { "keywords": { "false": ["hidden", "buried", "overflow menu only"] }, "default": "true" }
+  },
+  {
+    "id": "eval.clarity.regions-purposeful",
+    "purpose": "evaluation",
+    "category": "task-clarity",
+    "type": "noul",
+    "question": "Does every area of the screen have a clear purpose?",
+    "instructions": "Decide whether each region or section of the solution has an evident, distinct purpose that a first-time user could describe, with no catch-all or ambiguous areas.",
+    "criteria": {
+      "true": "Every region has a clear, distinct purpose",
+      "false": "Some regions are ambiguous, overlapping or catch-all"
+    },
+    "mock": { "keywords": { "false": ["miscellaneous", "other stuff", "catch-all"] }, "default": "true" }
+  },
+  {
+    "id": "eval.ia.hierarchy",
+    "purpose": "evaluation",
+    "category": "information-architecture",
+    "type": "noul",
+    "question": "Does the order of information match what users need first?",
+    "instructions": "Using the problem's users, goal and tasks, decide whether the solution presents information in an order and prominence that matches users' priorities: the most important information first and most prominent, supporting information after.",
+    "criteria": {
+      "true": "The order and prominence of information match users' priorities",
+      "false": "Important information is placed after, or less prominently than, less important information"
+    },
+    "mock": { "keywords": { "false": ["everything on one screen", "everything at once"] }, "default": "true" }
+  },
+  {
+    "id": "eval.ia.grouping",
+    "purpose": "evaluation",
+    "category": "information-architecture",
+    "type": "noul",
+    "question": "Are related things grouped together?",
+    "instructions": "Decide whether the solution keeps related controls and information together (for example filters next to the list they filter, actions next to the item they act on) rather than scattering them.",
+    "criteria": {
+      "true": "Related controls and information are grouped together",
+      "false": "Related controls or information are scattered across distant areas"
+    },
+    "mock": { "keywords": { "false": ["scattered", "far from"] }, "default": "true" }
+  },
+  {
+    "id": "eval.interaction.efficient",
+    "purpose": "evaluation",
+    "category": "interaction-quality",
+    "type": "noul",
+    "question": "Are the interactions efficient for how often users do this?",
+    "instructions": "Considering how often users perform the primary task and how many items they handle, decide whether the solution's interactions keep steps, clicks and context switches low for that usage (for example bulk actions or shortcuts for frequent, high-volume work).",
+    "criteria": {
+      "true": "Interactions are efficient for the expected frequency and volume of use",
+      "false": "Interactions add unnecessary steps or context switches for the expected use"
+    },
+    "mock": { "keywords": { "false": ["slower when scanning", "slower for expert"] }, "default": "true" }
+  },
+  {
+    "id": "eval.cognitive.load",
+    "purpose": "evaluation",
+    "category": "cognitive-load",
+    "type": "score",
+    "question": "How light is the mental effort the solution asks of users?",
+    "instructions": "Rate how much users must hold in mind, compare or decode at once to use this solution for the primary task. Consider the amount of simultaneous information, the number of choices presented together and how predictable the layout is.",
+    "criteria": [
+      "Overwhelming: too much at once; users must hold a lot in mind",
+      "Heavy: noticeably demanding; several things compete for attention",
+      "Manageable: some density, but organised and predictable",
+      "Light: focused and easy to follow"
+    ],
+    "mock": { "keywords": { "3": ["one item", "single column", "one step"], "1": ["everything at once", "dense", "many columns"] }, "default": "2" }
+  },
+  {
+    "id": "eval.a11y.keyboard",
+    "purpose": "evaluation",
+    "category": "accessibility",
+    "type": "noul",
+    "question": "Can everything be done without a mouse or drag gestures?",
+    "instructions": "Decide whether every interaction in the solution can be performed with a keyboard or simple pointer actions, without depending on hover-only reveals, dragging or multi-finger gestures.",
+    "criteria": {
+      "true": "All interactions have keyboard and simple-pointer equivalents",
+      "false": "Some interactions depend on hover-only reveals, dragging or gestures"
+    },
+    "mock": { "keywords": { "false": ["drag to", "drag a", "drag the", "drag and drop", "hover only", "swipe only", "only by dragging"] }, "default": "true" }
+  },
+  {
+    "id": "eval.a11y.not-color-only",
+    "purpose": "evaluation",
+    "category": "accessibility",
+    "type": "noul",
+    "question": "Is meaning conveyed by more than colour alone?",
+    "instructions": "Decide whether status, errors and other meaning in the solution are conveyed with text, icons or shape in addition to colour.",
+    "criteria": {
+      "true": "Meaning is carried by text, icons or shape as well as colour",
+      "false": "Some meaning is conveyed by colour alone"
+    },
+    "mock": { "keywords": { "false": ["colour only", "color only", "red and green dots"] }, "default": "true" }
+  },
+  {
+    "id": "eval.errors.destructive-protected",
+    "purpose": "evaluation",
+    "category": "error-prevention",
+    "type": "noul",
+    "question": "Are destructive or irreversible actions protected?",
+    "instructions": "Identify actions in the solution that delete, reject or otherwise cause loss or harm. Decide whether each is protected by a confirmation or an undo. If the solution has no such actions, answer true.",
+    "criteria": {
+      "true": "Every destructive action has a confirmation or undo, or there are none",
+      "false": "At least one destructive action happens without confirmation or undo"
+    },
+    "mock": { "keywords": { "false": ["without confirmation", "no confirmation", "immediately deletes"] }, "default": "true" }
+  },
+  {
+    "id": "eval.feedback.outcomes",
+    "purpose": "evaluation",
+    "category": "feedback",
+    "type": "noul",
+    "question": "Do users learn the outcome of what they did?",
+    "instructions": "Decide whether the solution tells users the result of their actions (success, failure, progress of longer operations) in a way they will notice, rather than leaving them to infer it.",
+    "criteria": {
+      "true": "Outcomes of actions are communicated clearly",
+      "false": "Outcomes are silent or easy to miss"
+    },
+    "mock": { "keywords": { "false": ["silently", "no feedback"] }, "default": "true" }
+  },
+  {
+    "id": "eval.consistency.patterns",
+    "purpose": "evaluation",
+    "category": "consistency",
+    "type": "noul",
+    "question": "Are similar things done the same way throughout?",
+    "instructions": "Decide whether the solution uses the same pattern for similar actions and information everywhere (for example every list is filtered the same way, every confirmation looks alike).",
+    "criteria": {
+      "true": "Similar actions and information use consistent patterns",
+      "false": "Similar actions or information are handled in different ways"
+    },
+    "mock": { "keywords": { "false": ["inconsistent", "different ways"] }, "default": "true" }
+  },
+  {
+    "id": "eval.ds.compliant",
+    "purpose": "evaluation",
+    "category": "design-system-compliance",
+    "type": "noul",
+    "question": "Is the solution built from the design system's components?",
+    "instructions": "Compare the solution with the design-system components listed in the problem. Decide whether the solution is built from those components (or clearly marks anything missing as new), rather than relying on unlisted, custom elements.",
+    "criteria": {
+      "true": "The solution uses the listed components, and marks anything missing as new",
+      "false": "The solution relies on custom or unlisted elements without saying so"
+    },
+    "mock": { "keywords": { "false": ["custom-built", "bespoke", "hand-built"] }, "default": "true" }
+  },
+  {
+    "id": "eval.states.represented",
+    "purpose": "evaluation",
+    "category": "required-states",
+    "type": "noul",
+    "question": "Does the solution show its loading, empty and error states?",
+    "instructions": "Compare the solution with the states listed in the problem as required. Decide whether the solution describes what users see in those states, especially loading, empty and error, not only the populated happy path.",
+    "criteria": {
+      "true": "The required states, including loading, empty and error, are represented",
+      "false": "Only the populated state is described; required states are missing"
+    },
+    "mock": { "keywords": { "true": ["loading", "empty state", "error state"] }, "default": "false" }
+  },
+  {
+    "id": "eval.responsive.adapts",
+    "purpose": "evaluation",
+    "category": "responsive-behavior",
+    "type": "noul",
+    "question": "Does the solution work on the devices people will use?",
+    "instructions": "Using the problem's device context, decide whether the solution explains how it works on those devices (for example how it adapts to a phone screen), rather than assuming one fixed screen size.",
+    "criteria": {
+      "true": "The solution fits the expected devices and says how it adapts",
+      "false": "The solution assumes one screen size or ignores the expected devices"
+    },
+    "mock": { "keywords": { "false": ["desktop only", "fixed width"] }, "default": "true" }
+  }
+]

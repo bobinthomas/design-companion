@@ -1,0 +1,38 @@
+{
+  "categoryWeights": {
+    "taskEffectiveness": 1.5,
+    "taskClarity": 1,
+    "informationArchitecture": 1,
+    "interactionQuality": 1,
+    "cognitiveLoad": 1,
+    "accessibility": 1.5,
+    "errorPrevention": 1.5,
+    "feedback": 1,
+    "consistency": 0.5,
+    "designSystemCompliance": 1,
+    "requiredStates": 1,
+    "responsiveBehavior": 1
+  },
+  "questionShare": 0.5,
+  "criticalCategoryCap": 40,
+  "criticalOverallCap": 59,
+  "unsureBelow": 0.7,
+  "failBelow": 0.5,
+  "questions": {
+    "eval.task.primary-central": { "severity": "high", "issue": "The primary task isn't the focus of the screen", "recommendation": "Give the primary task the most prominent space and make it reachable without extra steps." },
+    "eval.clarity.primary-action": { "severity": "high", "issue": "The main action is hard to find", "recommendation": "Make the main action visible and visually dominant where users need it." },
+    "eval.clarity.regions-purposeful": { "severity": "medium", "issue": "Some areas don't have a clear purpose", "recommendation": "Give each region one clear job, and merge or remove catch-all areas." },
+    "eval.ia.hierarchy": { "severity": "medium", "issue": "Information isn't ordered by what users need first", "recommendation": "Reorder regions so the most important information comes first and is most prominent." },
+    "eval.ia.grouping": { "severity": "medium", "issue": "Related controls and information are scattered", "recommendation": "Place filters with the list they filter and actions with the item they act on." },
+    "eval.interaction.efficient": { "severity": "medium", "issue": "Interactions add steps for how often this is used", "recommendation": "Reduce steps for frequent work, e.g. bulk actions, inline actions or shortcuts." },
+    "eval.cognitive.load": { "severity": "medium", "issue": "The screen asks a lot of users at once", "recommendation": "Show less at once: progressive disclosure, fewer simultaneous choices, a more predictable layout." },
+    "eval.a11y.keyboard": { "severity": "critical", "issue": "Some interactions need a mouse, hover or dragging", "recommendation": "Provide keyboard and simple-pointer equivalents for every interaction (WCAG 2.1.1, 2.5.7)." },
+    "eval.a11y.not-color-only": { "severity": "high", "issue": "Some meaning is shown by colour alone", "recommendation": "Add text labels or icons to colour-coded status and errors (WCAG 1.4.1)." },
+    "eval.errors.destructive-protected": { "severity": "critical", "issue": "A destructive action isn't protected", "recommendation": "Add a confirmation for irreversible actions, or an undo for reversible ones." },
+    "eval.feedback.outcomes": { "severity": "high", "issue": "Users may not learn the outcome of their actions", "recommendation": "Confirm success and explain failures where users will notice, and show progress for longer operations." },
+    "eval.consistency.patterns": { "severity": "low", "issue": "Similar things are done in different ways", "recommendation": "Use one pattern for each kind of action and information throughout." },
+    "eval.ds.compliant": { "severity": "high", "issue": "The solution relies on elements outside the design system", "recommendation": "Build from the design system's components, and mark anything missing as a net-new component." },
+    "eval.states.represented": { "severity": "high", "issue": "Loading, empty or error states aren't described", "recommendation": "Describe what users see while loading, when there's nothing to show, and when something fails." },
+    "eval.responsive.adapts": { "severity": "medium", "issue": "It isn't clear how this works on the expected devices", "recommendation": "Describe how the layout adapts to each expected device, especially phones." }
+  }
+}

@@ -4,7 +4,7 @@ import { loadCloudflareSettings, loadSettings } from "@/lib/ai/clientSettings";
 import type { AnalysisResponse } from "@/lib/ux/analyze";
 import type { StateExtraction } from "@/lib/ux/state/extract";
 import type { AnalysisSession } from "@/lib/session/session";
-import type { LayoutBrainstorm } from "@/lib/schemas";
+import type { EvaluationRun, EvaluationSubjectInput, LayoutBrainstorm } from "@/lib/schemas";
 
 /** Credentials saved in Settings, attached to every request that may use them. */
 function credentials() {
@@ -77,5 +77,17 @@ export function requestLayouts(session: AnalysisSession, instruction?: string): 
     overrides: session.overrides,
     gapSettlements: session.gapSettlements,
     ...(instruction?.trim() ? { instruction: instruction.trim() } : {}),
+  });
+}
+
+/** PRD §27–28: evaluates up to three subjects against the session's decisions (one decision-model request). */
+export function requestEvaluation(session: AnalysisSession, subjects: EvaluationSubjectInput[]): Promise<EvaluationRun> {
+  return postJson("/api/ux/evaluate", {
+    ...credentials(),
+    state: session.state,
+    results: session.results,
+    overrides: session.overrides,
+    gapSettlements: session.gapSettlements,
+    subjects,
   });
 }

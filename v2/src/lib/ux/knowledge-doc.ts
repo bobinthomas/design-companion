@@ -1,6 +1,6 @@
-import { ANALYSIS_QUESTIONS, KNOWLEDGE_VERSIONS, UX_PATTERNS, UX_RULES } from "@/lib/knowledge";
+import { ANALYSIS_QUESTIONS, EVALUATION_QUESTIONS, EVALUATOR, evaluationCategoryOf, KNOWLEDGE_VERSIONS, UX_PATTERNS, UX_RULES } from "@/lib/knowledge";
 import { renderPattern, renderRule } from "@/lib/ux/rules/dsl";
-import { RULE_CATEGORIES, RULE_TIERS } from "@/lib/schemas";
+import { EVALUATION_CATEGORY_LABELS, RULE_CATEGORIES, RULE_TIERS } from "@/lib/schemas";
 
 /**
  * Renders docs/KNOWLEDGE.md: every question, rule and pattern in readable
@@ -16,9 +16,9 @@ export function renderKnowledgeDoc(): string {
     "",
     "> Generated from `knowledge/` by `npm run knowledge:doc`. Do not edit by hand; change the JSON and regenerate.",
     "",
-    `Versions: questions ${KNOWLEDGE_VERSIONS.questionSet} · rules ${KNOWLEDGE_VERSIONS.rules} · patterns ${KNOWLEDGE_VERSIONS.patterns} · policy ${KNOWLEDGE_VERSIONS.policy}`,
+    `Versions: questions ${KNOWLEDGE_VERSIONS.questionSet} · rules ${KNOWLEDGE_VERSIONS.rules} · patterns ${KNOWLEDGE_VERSIONS.patterns} · policy ${KNOWLEDGE_VERSIONS.policy} · evaluator ${KNOWLEDGE_VERSIONS.evaluator}`,
     "",
-    `**${UX_RULES.length} rules · ${UX_PATTERNS.length} patterns · ${ANALYSIS_QUESTIONS.length} analysis questions**`,
+    `**${UX_RULES.length} rules · ${UX_PATTERNS.length} patterns · ${ANALYSIS_QUESTIONS.length} analysis questions · ${EVALUATION_QUESTIONS.length} evaluation questions**`,
     "",
     "## How to read this",
     "",
@@ -57,6 +57,22 @@ export function renderKnowledgeDoc(): string {
           ? Object.keys(q.criteria).join(", ")
           : q.criteria.map((_, i) => String(i)).join(" / ") + " (levels)";
     out.push(`| \`${q.id}\` | ${q.type} | ${q.question} | ${answers} |`);
+  }
+  out.push("");
+
+  out.push(
+    "## Evaluation questions",
+    "",
+    "Asked once per evaluated solution. A good answer is `true` (or a high level); a poor one raises the issue shown, at its severity.",
+    "",
+    "| Id | Category | Question | Severity | Issue → recommendation |",
+    "|---|---|---|---|---|"
+  );
+  for (const q of EVALUATION_QUESTIONS) {
+    const c = EVALUATOR.questions[q.id];
+    out.push(
+      `| \`${q.id}\` | ${EVALUATION_CATEGORY_LABELS[evaluationCategoryOf(q)]} | ${q.question} | ${c.severity} | ${c.issue} → ${c.recommendation} |`
+    );
   }
   out.push("");
   return out.join("\n");

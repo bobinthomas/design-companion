@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import type { DirectionCheck, LayoutBrainstorm, LayoutVariant, PolicyOutcome } from "@/lib/schemas";
+import type { DirectionCheck, EvaluationRun, LayoutBrainstorm, LayoutVariant, PolicyOutcome, UXEvaluation } from "@/lib/schemas";
+import {
+  CompareTable,
+  EVALUATION_QUESTION_COUNT,
+  EvaluationReport,
+  IssueList,
+  RunMeta,
+  scoreTone,
+} from "@/components/evaluate/EvaluationReport";
 import {
   BAND_LABELS,
   BAND_STYLES,
@@ -10,6 +18,7 @@ import {
   inputClass,
   pct,
   primaryButton,
+  secondaryButton,
   sectionTitle,
 } from "@/lib/client/format";
 
@@ -44,7 +53,17 @@ function List({ title, items }: { title: string; items: string[] }) {
 }
 
 /** One direction: a region-by-region wireframe, then the reasoning behind it. */
-function DirectionCard({ variant, check, names }: { variant: LayoutVariant; check?: DirectionCheck; names: Lookups }) {
+function DirectionCard({
+  variant,
+  check,
+  evaluation,
+  names,
+}: {
+  variant: LayoutVariant;
+  check?: DirectionCheck;
+  evaluation?: UXEvaluation;
+  names: Lookups;
+}) {
   return (
     <article className={`${card} flex flex-col gap-4`} aria-labelledby={`direction-${variant.id}`}>
       <header className="flex flex-col gap-1">
@@ -52,14 +71,22 @@ function DirectionCard({ variant, check, names }: { variant: LayoutVariant; chec
           <h3 id={`direction-${variant.id}`} className="font-semibold text-zinc-900 dark:text-zinc-50">
             {variant.title}
           </h3>
-          {check && (
-            <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${BAND_STYLES[check.band]}`}
-              title="Mean confidence of the decisions this direction builds on"
-            >
-              {pct(check.confidence)} · {BAND_LABELS[check.band]}
-            </span>
-          )}
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            {evaluation && (
+              <span className={`text-lg font-semibold tabular-nums ${scoreTone(evaluation.overallScore)}`} title="UX evaluation score">
+                {evaluation.overallScore}
+                <span className="text-xs font-normal text-zinc-400">/100</span>
+              </span>
+            )}
+            {check && (
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${BAND_STYLES[check.band]}`}
+                title="Mean confidence of the decisions this direction builds on"
+              >
+                {pct(check.confidence)} · {BAND_LABELS[check.band]}
+              </span>
+            )}
+          </div>
         </div>
         {variant.strategy !== variant.title && <p className="text-xs text-violet-700 dark:text-violet-300">{variant.strategy}</p>}
         <p className="text-sm text-zinc-600 dark:text-zinc-400">{variant.summary}</p>
@@ -126,6 +153,15 @@ function DirectionCard({ variant, check, names }: { variant: LayoutVariant; chec
         </div>
       </details>
 
+      {evaluation && evaluation.issues.length > 0 && (
+        <div>
+          <p className={sectionTitle}>Top issues</p>
+          <div className="mt-2">
+            <IssueList evaluation={evaluation} limit={2} />
+          </div>
+        </div>
+      )}
+
       {check && (check.uncoveredDecisions.length > 0 || check.unusedComponents.length > 0) && (
         <div className="rounded-lg bg-zinc-100 p-2.5 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
           {check.uncoveredDecisions.length > 0 && (
@@ -144,21 +180,31 @@ function DirectionCard({ variant, check, names }: { variant: LayoutVariant; chec
 export function LayoutDirections({
   outcome,
   runs,
+  evaluations,
   stale,
   busy,
+  evaluating,
   onGenerate,
+  onEvaluate,
 }: {
   outcome: PolicyOutcome;
   runs: LayoutBrainstorm[];
-  stale: (run: LayoutBrainstorm) => boolean;
+  /** The session's evaluation runs, newest first. */
+  evaluations: EvaluationRun[];
+  /** True when the decisions changed since a run was made against them. */
+  stale: (basedOn: readonly { decision: string; choice: string }[]) => boolean;
   busy: boolean;
+  evaluating: boolean;
   onGenerate: (instruction: string) => void;
+  onEvaluate: (run: LayoutBrainstorm) => void;
 }) {
   const [instruction, setInstruction] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const run = runs.find((r) => r.id === selected) ?? runs[0];
   const names = lookups(outcome);
   const blocking = outcome.gaps.filter((g) => g.behavior === "block");
+  const evaluation = run ? evaluations.find((e) => e.subjects.every((s) => s.layoutRunId === run.id)) : undefined;
+  const runStale = run ? stale(run.basedOn) : false;
 
   return (
     <section aria-labelledby="layouts-title" className="flex flex-col gap-4">
@@ -233,7 +279,7 @@ export function LayoutDirections({
             {run.notices.map((n) => (
               <p key={n}>{n}</p>
             ))}
-            {stale(run) && (
+            {runStale && (
               <p role="status" className="text-amber-800 dark:text-amber-300">
                 ⚠ Your decisions have changed since these directions were generated. Generate again to reflect them.
               </p>
@@ -241,9 +287,58 @@ export function LayoutDirections({
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {run.output.variants.map((v) => (
-              <DirectionCard key={v.id} variant={v} check={run.checks.find((c) => c.variantId === v.id)} names={names} />
+              <DirectionCard
+                key={v.id}
+                variant={v}
+                check={run.checks.find((c) => c.variantId === v.id)}
+                evaluation={evaluation?.evaluations.find((e) => e.subjectId === v.id)}
+                names={names}
+              />
             ))}
           </div>
+
+          <section aria-labelledby="compare-title" className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h3 id="compare-title" className="font-semibold text-zinc-900 dark:text-zinc-50">
+                  Evaluate and compare
+                </h3>
+                <p className="max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
+                  {run.output.variants.length * EVALUATION_QUESTION_COUNT} atomic questions go to the decision model in one
+                  request, plus checks in code, scored across 12 UX categories.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={evaluation ? secondaryButton : primaryButton}
+                disabled={evaluating || busy || runStale}
+                title={runStale ? "Generate the directions again first" : undefined}
+                onClick={() => onEvaluate(run)}
+              >
+                {evaluating ? "Evaluating…" : evaluation ? "Evaluate again" : "Evaluate directions"}
+              </button>
+            </div>
+            {evaluation && (
+              <>
+                <RunMeta run={evaluation} stale={stale(evaluation.basedOn)} />
+                <CompareTable run={evaluation} />
+                <details>
+                  <summary className="cursor-pointer text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Full reports: every category&apos;s evidence, all issues, all checks
+                  </summary>
+                  <div className="mt-3 grid gap-4 lg:grid-cols-2">
+                    {evaluation.evaluations.map((e) => (
+                      <EvaluationReport
+                        key={e.subjectId}
+                        evaluation={e}
+                        label={evaluation.subjects.find((s) => s.id === e.subjectId)?.label ?? e.subjectId}
+                      />
+                    ))}
+                  </div>
+                </details>
+              </>
+            )}
+          </section>
           {run.output.assumptions.length > 0 && (
             <div className={card}>
               <List title="Assumptions" items={run.output.assumptions} />

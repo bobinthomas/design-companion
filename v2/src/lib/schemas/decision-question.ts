@@ -17,6 +17,13 @@ const questionBase = {
   question: z.string().min(1),
   /** Full instructions sent to the decision provider. */
   instructions: z.string().min(1),
+  /**
+   * Dot path to the part of the state this question is about, e.g.
+   * "solutions.s1" when several solutions are evaluated in one request.
+   * The instructions must name it too; providers that can narrow their
+   * view (the mock) judge only that part.
+   */
+  scope: z.string().regex(/^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$/).optional(),
 };
 
 /**

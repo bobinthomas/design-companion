@@ -35,22 +35,23 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 8. [UX Policy](#ux-policy)
 9. [UX Analyze](#ux-analyze)
 10. [Layout Brainstorm](#layout-brainstorm)
-11. [Design System Intelligence](#design-system-intelligence)
-12. [Knowledge base](#knowledge-base)
-13. [API reference](#api-reference)
-14. [User interface](#user-interface)
-15. [Testing](#testing)
-16. [Deployment](#deployment)
-17. [Project structure](#project-structure)
-18. [Design decisions](#design-decisions)
-19. [Known limitations](#known-limitations)
-20. [Roadmap](#roadmap)
+11. [UX Evaluate](#ux-evaluate)
+12. [Design System Intelligence](#design-system-intelligence)
+13. [Knowledge base](#knowledge-base)
+14. [API reference](#api-reference)
+15. [User interface](#user-interface)
+16. [Testing](#testing)
+17. [Deployment](#deployment)
+18. [Project structure](#project-structure)
+19. [Design decisions](#design-decisions)
+20. [Known limitations](#known-limitations)
+21. [Roadmap](#roadmap)
 
 ---
 
 ## Status
 
-V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–7 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
+V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–8 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
 
 | # | Milestone | Status |
 |---|---|---|
@@ -61,18 +62,19 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 | 5 | Knowledge base: 50 rules, 14 patterns, 35 questions, readable review document, second golden scenario | ✅ Done (awaiting designer review) |
 | 6 | UX Analyze screen: state extraction and review, decision cards, Decision Inspector, overrides, gap resolution, session trace | ✅ Done |
 | 7 | Decision-guided Layout Brainstorm: constrained directions, gap placeholders, refusal when blocked, deterministic checks | ✅ Done |
-| 8 | UX Evaluation + Compare Solutions | Next |
-| 9 | UI Copy and Feedback Summary migration; Design System Review screen | Planned |
+| 8 | UX Evaluation + Compare: 15 atomic questions, deterministic checks, 12 category scores, one batched request, `/evaluate` | ✅ Done |
+| 9 | UI Copy and Feedback Summary migration; Design System Review screen | Next |
 | 10 | Benchmark (LLM-only vs LLM + design system vs decision-guided), docs, deploy | Planned |
 
 **What works today:**
-- **UX Analyze** (`/analyze`): brief → reviewable UX state → decisions you can inspect, accept or override → patterns, components and design-system gaps → **layout directions** built only from your design system, with an exportable trace.
-- The full pipeline as JSON APIs (`/api/ux/state`, `/api/ux/decide`, `/api/ux/analyze`, `/api/ux/layouts`).
+- **UX Analyze** (`/analyze`): brief → reviewable UX state → decisions you can inspect, accept or override → patterns, components and design-system gaps → **layout directions** built only from your design system → **evaluation and comparison** across 12 UX categories, with an exportable trace.
+- **UX Evaluate** (`/evaluate`): describe a UI or spec (up to three, to compare) and score it against a saved analysis.
+- The full pipeline as JSON APIs (`/api/ux/state`, `/api/ux/decide`, `/api/ux/analyze`, `/api/ux/layouts`, `/api/ux/evaluate`).
 - The Settings screen.
-- 216 passing tests.
+- 227 passing tests.
 - A designer-readable copy of all UX knowledge: [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md).
 
-The remaining screens (Evaluate, Copy, Feedback, Knowledge, Design System Review) arrive in Milestones 8–9. Until then their header links lead to 404 pages.
+The remaining screens (Copy, Feedback, Knowledge, Design System Review) arrive in Milestone 9. Until then their header links lead to 404 pages.
 
 ---
 
@@ -188,7 +190,7 @@ Designer brief
 └──────┬───────────────────────┘
        ▼
 ┌──────────────────────────────┐
-│ EVALUATION           (M8)    │   atomic questions + deterministic checks
+│ EVALUATION                   │   atomic questions + deterministic checks
 └──────┬───────────────────────┘
        ▼
    Designer (inspect · accept · override)
@@ -211,7 +213,7 @@ All schemas are in [src/lib/schemas/](src/lib/schemas/) and re-exported from `@/
 |---|---|---|
 | Vocabulary | `vocabulary.ts` | Shared enums: expertise, frequency, device, audience, accessibility level, UI states, rule priorities and tiers, rule categories, the 12 decision slots and their options, the fact paths policy may read |
 | `UXState` | `ux-state.ts` | The structured UX problem (see [The UX state](#the-ux-state)) |
-| `DecisionQuestion` | `decision-question.ts` | One atomic question: `noul`, `choice` or `score`, in Jev's native `instructions` + `criteria` shape, plus mock hints |
+| `DecisionQuestion` | `decision-question.ts` | One atomic question: `noul`, `choice` or `score`, in Jev's native `instructions` + `criteria` shape, plus mock hints and an optional `scope` (the part of the state it's about) |
 | `DecisionResult` | `decision-result.ts` | One typed answer: `noul` probability, `choice` + probabilities, or weighted `score` + distribution. Always has `confidence`, `provider` and `model` |
 | `UXRule` | `ux-rule.ts` | Externalized policy: conditions over question results or hard facts; a §13 tier and a priority; recommend / avoid / requires capabilities or states |
 | `UXDecision` | `ux-decision.ts` | The application-level decision: choice, confidence band, source, evidence, rules applied, alternatives, required capabilities, override record |
@@ -222,8 +224,8 @@ All schemas are in [src/lib/schemas/](src/lib/schemas/) and re-exported from `@/
 | `CapabilityRequirement` | `capability-requirement.ts` | What the UX needs from the design system, with inherited priority and tier and what required it |
 | `DesignSystemGap` | `design-system-gap.ts` | Capability resolutions and gaps: kind, severity, affected decisions, suggested resolutions, status, recorded resolution |
 | Import format + report | `design-system-import.ts` | Permissive Phase 1 import JSON, normalization report, pending mappings |
-| `UXEvaluation` | `ux-evaluation.ts` | 12 evaluation categories, deterministic checks, per-category scores with evidence, issues tied to their source |
-| `Generation` | `generation.ts` | Layout variants. `buildGenerationSchema()` narrows pattern, component, rule and gap ids per request |
+| `UXEvaluation` | `ux-evaluation.ts` | 12 evaluation categories, deterministic checks, per-category scores with evidence, issues tied to their source; evaluation subjects and the `EvaluationRun` trace record |
+| `Generation` | `generation.ts` | Layout variants. `buildGenerationSchema()` / `buildVariantSchema()` narrow pattern, component, rule and gap ids per request |
 | `KnowledgeVersions` | `versions.ts` | Versions of everything a result depends on (§30) |
 
 ### Decision slots
@@ -545,8 +547,8 @@ Below the panels, a collapsible table lists **all 35 questions and their raw ans
 - the decision-model results and provider;
 - the full policy outcome, including its knowledge versions;
 - overrides, acceptances and gap settlements;
-- an **event log**: created, state-extracted, state-edited, decided, accepted, overridden, override-removed, gap-settled, gap-reopened, layouts-generated;
-- the last 5 Layout Brainstorm runs.
+- an **event log**: created, state-extracted, state-edited, decided, accepted, overridden, override-removed, gap-settled, gap-reopened, layouts-generated, evaluated;
+- the last 5 Layout Brainstorm runs and the last 5 evaluation runs.
 
 Every update is a pure function. Two consistency rules:
 - **Acceptances are tied to the accepted choice.** If an override or re-run changes the choice, the acceptance lapses.
@@ -641,7 +643,7 @@ The draft passes through the same per-request schema as an LLM's output and is l
 | `unusedComponents` | Selected components the direction leaves out |
 | `gapPlaceholders` | Gaps it shows |
 
-Full UX evaluation scores arrive in Milestone 8.
+Full UX evaluation scores come from [UX Evaluate](#ux-evaluate).
 
 ### On screen
 
@@ -652,6 +654,109 @@ Below the patterns, components and gaps panels:
 - **Header line:** the source (LLM model or draft), time and design-system version. It warns when **the decisions have changed since generation** (`layoutsStale`).
 - **Run history:** the last 5 runs are kept in the session, with a picker for earlier ones. Editing the state clears them.
 - **When blocked**, the form is replaced by an explanation of what to resolve.
+
+---
+
+## UX Evaluate
+
+[src/lib/ux/evaluate/](src/lib/ux/evaluate/) · [src/app/api/ux/evaluate/route.ts](src/app/api/ux/evaluate/route.ts) · [src/app/evaluate/page.tsx](src/app/evaluate/page.tsx) · [src/components/evaluate/](src/components/evaluate/)
+
+PRD §27–28. Evaluation is decomposed: no "is this UX good?" prompt. It combines:
+- **atomic questions**, answered by the decision model;
+- **deterministic checks**, run in code.
+
+Code then combines both into **12 category scores** and an overall score. Every score cites what it came from, and every issue names the question, check, rule or gap that produced it.
+
+```text
+subjects (1–3) ──► one batched state + scoped questions ──► decision model (ONE request)
+     │                                                              │
+     └──► deterministic checks (code) ─────────────┐                │
+                                                   ▼                ▼
+                                      aggregate(): 12 categories, overall, issues
+                                                   │
+                                                   ▼
+                                  EvaluationRun ──► session trace ("evaluated")
+```
+
+### What can be evaluated
+
+Everything is judged **against a saved analysis**, so a score means "good for this problem", not good in general.
+
+| Subject | Where | Checks |
+|---|---|---|
+| **Layout directions** | `/analyze` → *Evaluate directions* (all directions of a run) | Questions + structural checks + decision-level checks |
+| **A described UI or spec** (1–3, to compare) | `/evaluate` | Questions + decision-level checks; structure can't be verified from prose, and the result says so |
+
+### One request for all subjects
+
+[batch.ts](src/lib/ux/evaluate/batch.ts) builds **one** decision state:
+- `problem`: users, tasks, context, decisions, required states, design-system components and gaps;
+- `solutions.s1`, `solutions.s2`, …: each subject, described for a reviewer. A direction is rendered region by region, with placeholders shown as "NEW COMPONENT NEEDED".
+
+Every question template is copied per solution, given a **`scope`** (`solutions.s2`), and prefixed *"Judge only the solution at solutions.s2 ("Exception first")…"*. So evaluating three directions is **one** Jev request of 45 questions, not three requests against the 2-per-day quota.
+
+`scope` is a new optional field on `DecisionQuestion`. Providers that can narrow their view honour it: the mock judges a scoped question only against that solution's text.
+
+### Evaluation questions
+
+[knowledge/questions/evaluation.json](knowledge/questions/evaluation.json) holds 15 atomic questions (14 noul, 1 score) covering all 12 PRD §27 categories, phrased so `true` (or a higher level) is good:
+
+| Category | Questions |
+|---|---|
+| Task effectiveness | Is the primary task at the centre? |
+| Task clarity | Is the primary action easy to find? · Does every area have a clear purpose? |
+| Information architecture | Does the order match what users need first? · Are related things grouped? |
+| Interaction quality | Are interactions efficient for how often users do this? |
+| Cognitive load | How light is the mental effort? (4-level score) |
+| Accessibility | Can everything be done without a mouse or drag gestures? · Is meaning conveyed by more than colour? |
+| Error prevention | Are destructive or irreversible actions protected? |
+| Feedback | Do users learn the outcome of what they did? |
+| Consistency | Are similar things done the same way? |
+| Design-system compliance | Is it built from the design system's components? |
+| Required states | Does it show its loading, empty and error states? |
+| Responsive behavior | Does it work on the devices people will use? |
+
+[knowledge/evaluator.json](knowledge/evaluator.json) gives each question:
+- the **issue** it raises;
+- a **recommendation**;
+- a **severity**.
+
+It also sets the category weights and the scoring constants. Both files are validated at load: every question needs a config, and every category needs a question. Both appear in [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) for review.
+
+### Deterministic checks
+
+[checks.ts](src/lib/ux/evaluate/checks.ts):
+
+| Check | Applies to | Category | Fails when |
+|---|---|---|---|
+| `check.ds.no-blocking-gaps` | every subject | Design-system compliance | A critical gap is still open (critical) |
+| `check.critical.<slot>` | every subject | Accessibility for accessibility-tier rules, otherwise the slot's category | An override chose an option a critical rule vetoed (critical, cites the rule) |
+| `check.ds.registry-only` | directions | Design-system compliance | A component wasn't selected from the design system |
+| `check.ds.net-new.<capability>` | directions | Design-system compliance | A net-new gap isn't shown as a placeholder |
+| `check.decision.<slot>` | directions | The slot's category (e.g. action confirmation → error prevention) | The direction doesn't show the capabilities the decision needs (cites the recommending rule) |
+| `check.states.<state>` | directions | Required states | A required data state (loading, empty, error, populated, success) isn't represented |
+| `check.responsive.phones` / `.desktop` | directions | Responsive behavior | No phone notes when phones are expected, or no desktop notes when large screens are |
+
+### Scoring
+
+| Step | Rule |
+|---|---|
+| Question value | noul → probability × 100; score → level ÷ (levels − 1) × 100 |
+| Category score | When both questions and checks apply, 50% questions + 50% checks (passed 100, failed 0); otherwise whichever applies |
+| Critical failure | A failed critical check caps its category at 40 |
+| Overall | Weighted mean of the 12 categories (task effectiveness, accessibility and error prevention weigh 1.5; consistency 0.5; the rest 1). Any critical issue caps it at 59 |
+| Issues | A noul answer below 0.5 (or a score in the bottom half) raises the configured issue at its severity. A noul answer of 0.5–0.7 raises a low-severity "Possibly: …". Every failed check raises an issue. Issues are sorted by severity |
+
+### Results on screen
+
+- **On `/analyze`:**
+  - each direction card shows its score and top two issues;
+  - **Compare** is a table with every category for every direction, the best in each row starred, plus counts of critical and high issues;
+  - **Full reports** has category bars (hover for the evidence), every issue with its source, and every check.
+- **On `/evaluate`:** choose the analysis to judge against, then describe up to three solutions. Evaluating one gives a report; evaluating several adds a comparison.
+- **In both places:** the provider and evaluator version, the fallback notices, a warning when the decisions have changed since the evaluation, and a picker for the last 5 runs.
+
+With the mock on the expense dashboard: *Task first* 93, *Exception first* 93, *Focus first* 90. Focus first's own trade-off, "slower when scanning many items", lowers its interaction score. A described *"card inbox… drag a card… red and green dots… rejecting immediately deletes"* scores 59. It gets critical issues for drag-only interaction and an unprotected destructive action, plus colour-only status and missing states.
 
 ---
 
@@ -808,11 +913,13 @@ Everything in [knowledge/](knowledge/) is validated at module load by [src/lib/k
 
 | File | Contents |
 |---|---|
-| `manifest.json` | Versions: question set 1.1.0, rules 0.2.0, policy 1.2.0, patterns 0.2.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.1.0 (adds the layout prompt). The evaluator stays at 0.0.0 until written; rules and patterns become 1.0.0 once a designer has reviewed them |
+| `manifest.json` | Versions: question set 1.1.0, rules 0.2.0, policy 1.2.0, patterns 0.2.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.1.0 (adds the layout prompt), evaluator 1.0.0 (covers `evaluator.json` and the evaluation questions). Rules and patterns become 1.0.0 once a designer has reviewed them |
 | `policy.json` | Confidence thresholds (0.85 / 0.65), noul threshold (0.7), quota (2/IP/day), gap behaviors, capability-mapping confidences and question cap, and **ranking**: tie tolerance 0.25, prior weight 1, priority weights (3 / 2 / 1 / 0.5), design-system penalties, max 3 alternatives |
 | `ux-rules/*.json` | **50 UX rules** in 11 files: accessibility, tables, filtering, search, layout, error-prevention, feedback, navigation, selection, forms, responsive |
 | `patterns.json` | **14 UX patterns**, defined by capabilities |
 | `questions/analysis.json` | **35 analysis questions** (26 noul, 6 choice, 3 score) |
+| `questions/evaluation.json` | **15 evaluation questions** (14 noul, 1 score) covering all 12 categories |
+| `evaluator.json` | Per-question issue, recommendation and severity; category weights; scoring constants (question share 0.5, critical caps 40 / 59, issue thresholds 0.5 / 0.7) |
 | `capabilities.json` | **50 capabilities** in 6 categories, each with acceptance criteria, required states and accessibility obligations |
 | `compositions.json` | **6 composition recipes** |
 | `decision-capabilities.json` | For every option of every decision slot, the capabilities it needs. Validated to cover exactly the vocabulary |
@@ -1008,6 +1115,43 @@ Layout Brainstorm (PRD §23). It never calls the decision model:
   "blockingGaps": [ { "id": "gap.destructive-confirmation", "capability": "destructive-confirmation" } ] }
 ```
 
+### `POST /api/ux/evaluate`
+
+UX Evaluate (PRD §27–28; the PRD's `{ ux, state, rules }` input, made concrete). The server:
+1. re-runs policy from the analysis inputs;
+2. checks each direction still fits those decisions (`409` if not);
+3. evaluates every subject with **one** decision-model request plus deterministic checks.
+
+```jsonc
+// request
+{
+  "state": { /* UXState */ },
+  "results": [ /* required: the analysis's decision-model results */ ],
+  "overrides": [], "gapSettlements": [], "designSystem": { /* optional */ },
+  "subjects": [                                         // 1–3
+    { "kind": "direction", "variant": { /* LayoutVariant */ }, "layoutRunId": "…" },
+    { "kind": "description", "title": "Card inbox", "description": "A grid of expense cards…" }
+  ],
+  "cloudflare": { … }, "clientConfig": { … }           // optional, as for /decide
+}
+
+// response: an EvaluationRun
+{
+  "id": "…", "evaluatedAt": "…", "provider": "jev", "model": "jev-…", "notices": [],
+  "subjects": [ { "id": "task-first", "kind": "direction", "label": "Task first", "layoutRunId": "…" } ],
+  "evaluations": [
+    { "subjectId": "task-first", "overallScore": 93,
+      "categories": { "taskEffectiveness": { "score": 94, "evidence": [ … ], "checks": ["check.decision.layout", …] }, … },
+      "issues": [ { "severity": "high", "category": "errorPrevention", "issue": "…", "recommendation": "…",
+                    "from": { "checkId": "check.decision.actionConfirmation", "ruleId": "…" } } ],
+      "checks": [ { "id": "check.states.empty", "label": "Represents the empty state", "category": "requiredStates", "passed": true } ],
+      "versions": { "decisionModel": "…", "evaluator": "1.0.0", … } }
+  ],
+  "results": [ /* raw batched results, ids suffixed .s1, .s2 … */ ],
+  "basedOn": [ { "decision": "dataPresentation", "choice": "data-table" } ]
+}
+```
+
 ### `POST /api/decision-model/evaluate`
 
 Answers atomic questions against a UX state. It returns raw, typed results only; policy is applied elsewhere.
@@ -1108,8 +1252,9 @@ Resolves capability requirements against a design system (the default if omitted
 | `/` | ✅ | Home: positioning, the six-step pipeline (Understand → Decide → Constrain → Generate → Validate → Direct), entry cards |
 | `/settings` | ✅ | LLM provider key and model override; **Decision model (Jev)** section with your own Cloudflare account and today's remaining shared quota |
 | Header | ✅ | V2 badge, primary nav, **Open V1** link, provider status pill (Live / Demo data) |
-| `/analyze` | ✅ | **UX Analyze**: brief, state review, decision cards, Decision Inspector, overrides, patterns / components / gaps, **layout directions**, questions table, session picker and trace export (see [UX Analyze](#ux-analyze) and [Layout Brainstorm](#layout-brainstorm)) |
-| `/evaluate`, `/copy`, `/feedback`, `/knowledge` | Milestones 8–9 | Linked from the header and home page; not built yet |
+| `/analyze` | ✅ | **UX Analyze**: brief, state review, decision cards, Decision Inspector, overrides, patterns / components / gaps, **layout directions** with evaluation and comparison, questions table, session picker and trace export (see [UX Analyze](#ux-analyze) and [Layout Brainstorm](#layout-brainstorm)) |
+| `/evaluate` | ✅ | **UX Evaluate**: describe 1–3 UIs or specs, judge them against a saved analysis, see reports and a comparison (see [UX Evaluate](#ux-evaluate)) |
+| `/copy`, `/feedback`, `/knowledge` | Milestone 9 | Linked from the header and home page; not built yet |
 | `/design-system` | Milestone 9 | Design System Review (import, report, capability matrix, gaps); not yet linked |
 
 Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V1.
@@ -1119,7 +1264,7 @@ Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V
 ## Testing
 
 ```bash
-npm test     # 13 suites, 216 tests
+npm test     # 14 suites, 227 tests
 ```
 
 | Suite | Covers |
@@ -1135,6 +1280,7 @@ npm test     # 13 suites, 216 tests
 | `tests/ux/subscription.test.ts` | **Second golden scenario**: mobile-first subscription sign-up and checkout. Steps with progress (multi-step, stepper, wizard), split view vetoed on the phone, no detail view without a list, the wizard vs short-auth conflict surfaced as uncertain, persistent inline errors, checkout-family patterns, no gaps |
 | `tests/ux/analyze.test.ts` | State extraction (the describe-don't-judge prompt, labelled demo states, the designer's brief preserved); `analyzeState` reusing results, rejecting unknown questions, applying gap settlements; the session trace (event log, schema-valid round trip, acceptances tied to choices, state edits clearing derived data) |
 | `tests/ux/layouts.test.ts` | Layout Brainstorm: the draft composer's directions for both golden scenarios (distinct leads, schema-valid, every component used, every decision shown, data states carried); refusal while Acme is blocked; after the undo override, every net-new gap placed in every direction and only Acme's components used; the LLM path held to the per-request schema (invented components and hidden gaps rejected, vetoes and steering in the prompt); direction checks; runs in the session trace, staleness, and loading older sessions |
+| `tests/ux/evaluate.test.ts` | UX Evaluate: the question set covers all 12 categories; one batched request with a scoped copy of every question per solution; the mock judging each solution on its own text; schema-valid evaluations of the draft directions with every check passing; a thin direction flagged with check and rule sources; the critical-override caps; net-new gap checks against Acme; a described UI judged by questions only (drag-only, unprotected delete, missing states); the scoring arithmetic; runs in the session trace |
 | `tests/ux/knowledge-doc.test.ts` | DSL rendering of rules (including vetoes as RULE OUT) and that `docs/KNOWLEDGE.md` matches `knowledge/` |
 | `tests/design-system/pipeline.test.ts` | Normalizer (names, states, variants, tokens, findings), capability mapping (declared, inferred, decision-model confirmation and rejection, designer review), and the full §21f worked example including override and accepted risk |
 
@@ -1152,7 +1298,12 @@ Milestone 7 was checked the same way, plus screenshots:
 - an override shows the "decisions have changed" warning;
 - at the narrowest window width, no horizontal scroll.
 
-The run surfaced a hydration warning on `<html>`, caused by a browser extension editing its class. It's now suppressed for that element only.
+Milestone 8 was checked the same way:
+- three directions evaluated in one request, with scores on the cards, the Compare table (best per row starred) and full reports;
+- on `/evaluate`, a flawed card-inbox description scored 59 with two critical issues;
+- no console errors.
+
+The Milestone 7 run surfaced a hydration warning on `<html>`, caused by a browser extension editing its class. It's now suppressed for that element only.
 
 The Milestone 6 run caught two bugs the unit tests had missed, now fixed: a Checkout pattern falsely matching the expense dashboard (a mock keyword), and rules repeated once per effect in the Inspector.
 
@@ -1188,7 +1339,8 @@ v2/
 │   ├── ux-rules/*.json             50 rules in 11 files
 │   ├── patterns.json
 │   ├── policy.json
-│   ├── questions/analysis.json
+│   ├── questions/{analysis,evaluation}.json
+│   ├── evaluator.json
 │   ├── capabilities.json
 │   ├── compositions.json
 │   ├── decision-capabilities.json
@@ -1198,16 +1350,18 @@ v2/
 │   ├── app/
 │   │   ├── page.tsx                Home
 │   │   ├── analyze/page.tsx        UX Analyze
+│   │   ├── evaluate/page.tsx       UX Evaluate
 │   │   ├── settings/page.tsx       Settings (LLM + Jev)
 │   │   ├── layout.tsx              Root layout + header
 │   │   └── api/
 │   │       ├── decision-model/{evaluate,quota}/route.ts
 │   │       ├── design-system/{capabilities,default,import,map,gaps}/route.ts
-│   │       └── ux/{state,decide,analyze,layouts}/route.ts
+│   │       └── ux/{state,decide,analyze,layouts,evaluate}/route.ts
 │   ├── components/
 │   │   ├── AppHeader.tsx
 │   │   ├── CloudflareSettings.tsx
-│   │   └── analyze/                BriefForm, StateReview, DecisionCard, DecisionInspector, SolutionPanel, LayoutDirections, QuestionsTable
+│   │   ├── analyze/                BriefForm, StateReview, DecisionCard, DecisionInspector, SolutionPanel, LayoutDirections, QuestionsTable
+│   │   └── evaluate/               EvaluationReport, CompareTable, IssueList
 │   └── lib/
 │       ├── ai/                     LLM dispatch (from V1) + validation retry
 │       ├── api.ts                  Shared request parsing and decision context
@@ -1230,6 +1384,7 @@ v2/
 │       │   ├── analyze.ts               analyzeState(): decision model + policy, shared by the routes
 │       │   ├── state/extract.ts         Brief → UX state (LLM prompt, demo fallback)
 │       │   ├── layouts/                 Layout Brainstorm: generate (prompt, refusal), compose (draft), checks
+│       │   ├── evaluate/                UX Evaluate: batch (one request), checks, evaluate (aggregation)
 │       │   └── fixtures/                Golden states: expense dashboard, subscription sign-up
 │       └── nav.ts                  Primary navigation
 ├── scripts/knowledge-doc.ts        npm run knowledge:doc
@@ -1288,7 +1443,10 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 - **Only UX Analyze (with Layout Brainstorm) is built so far** among the designer-facing screens (plus Home and Settings).
 - **The phone-width check stopped at 568px**, Chrome's minimum window width. Narrower phones haven't been checked by eye.
 - **Draft directions are generic.** Without an LLM, region wording comes from templates and all directions share the same decision basis, so their confidences are equal. With an LLM, directions are problem-specific.
-- **Directions are not yet scored.** Evaluation scores (PRD §23) arrive with Milestone 8; today each direction shows decision confidence and coverage checks.
+- **Mock evaluations barely differ.** With the keyword mock, directions built from the same decisions score almost alike; real differences need Jev or an LLM judging them.
+- **Descriptions get no structural checks.** Prose can't be verified like a generated direction, so a described UI is scored by questions and decision-level checks only.
+- **One batched request has more questions** (15 per subject, up to 45). Jev's behaviour with batches that large hasn't been verified live yet.
+- **Scoring constants are first drafts.** The weights, caps and thresholds in `evaluator.json` should be reviewed alongside the rules.
 - **Steering starts fresh.** Layout runs aren't sent back to the LLM as prior output, so "generate again" with steering doesn't refine the previous run.
 - **The state editor** offers in-place edits for hard constraints and assumptions only; everything else is edited as JSON.
 - **PRD §33 types the provider's state as `UXState`;** the implementation accepts any object. The architecture doc will reflect this.
@@ -1297,11 +1455,11 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 
 ## Roadmap
 
-**Milestone 8, UX Evaluation and Compare (next):**
-- Atomic evaluation questions plus deterministic checks, aggregated in code into the 12 `UXEvaluation` categories.
-- Scores for each layout direction, and a Compare view across directions.
-- `/evaluate` for a described UI or spec.
+**Milestone 9 (next):**
+- **UI Copy**, context-aware: component, action, risk, reversibility and user from the UX state and decisions; policy decides interaction requirements, the LLM writes the words.
+- **Feedback Summary**: raw research feedback → UX issues → rule-backed recommended changes.
+- **Design System Review** (`/design-system`): import, normalization report, capability matrix, mapping review and gaps.
+- **Knowledge** (`/knowledge`): browse the rules, patterns and questions.
 
 **Then:**
-- Milestone 9: UI Copy, Feedback Summary and Design System Review.
-- Milestone 10: the three-system benchmark, architecture docs and deployment.
+- Milestone 10: the three-system benchmark (LLM-only, LLM + design system, decision-guided), architecture docs and deployment.

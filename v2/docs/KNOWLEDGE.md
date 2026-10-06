@@ -2,9 +2,9 @@
 
 > Generated from `knowledge/` by `npm run knowledge:doc`. Do not edit by hand; change the JSON and regenerate.
 
-Versions: questions 1.1.0 · rules 0.2.0 · patterns 0.2.0 · policy 1.2.0
+Versions: questions 1.1.0 · rules 0.2.0 · patterns 0.2.0 · policy 1.2.0 · evaluator 1.0.0
 
-**50 rules · 14 patterns · 35 analysis questions**
+**50 rules · 14 patterns · 35 analysis questions · 15 evaluation questions**
 
 ## How to read this
 
@@ -703,3 +703,25 @@ AVOID     Losing unsaved edits when navigating away
 | `task.record-lifecycle.present` | noul | Do users create, edit and delete records? | true / false |
 | `task.quick-edits.frequent` | noul | Do users often change one or two fields of existing records? | true / false |
 | `task.structured-input.required` | noul | Must users enter values in specific formats? | true / false |
+
+## Evaluation questions
+
+Asked once per evaluated solution. A good answer is `true` (or a high level); a poor one raises the issue shown, at its severity.
+
+| Id | Category | Question | Severity | Issue → recommendation |
+|---|---|---|---|---|
+| `eval.task.primary-central` | Task effectiveness | Is the primary task at the centre of the solution? | high | The primary task isn't the focus of the screen → Give the primary task the most prominent space and make it reachable without extra steps. |
+| `eval.clarity.primary-action` | Task clarity | Is the primary action easy to find? | high | The main action is hard to find → Make the main action visible and visually dominant where users need it. |
+| `eval.clarity.regions-purposeful` | Task clarity | Does every area of the screen have a clear purpose? | medium | Some areas don't have a clear purpose → Give each region one clear job, and merge or remove catch-all areas. |
+| `eval.ia.hierarchy` | Information architecture | Does the order of information match what users need first? | medium | Information isn't ordered by what users need first → Reorder regions so the most important information comes first and is most prominent. |
+| `eval.ia.grouping` | Information architecture | Are related things grouped together? | medium | Related controls and information are scattered → Place filters with the list they filter and actions with the item they act on. |
+| `eval.interaction.efficient` | Interaction quality | Are the interactions efficient for how often users do this? | medium | Interactions add steps for how often this is used → Reduce steps for frequent work, e.g. bulk actions, inline actions or shortcuts. |
+| `eval.cognitive.load` | Cognitive load | How light is the mental effort the solution asks of users? | medium | The screen asks a lot of users at once → Show less at once: progressive disclosure, fewer simultaneous choices, a more predictable layout. |
+| `eval.a11y.keyboard` | Accessibility | Can everything be done without a mouse or drag gestures? | critical | Some interactions need a mouse, hover or dragging → Provide keyboard and simple-pointer equivalents for every interaction (WCAG 2.1.1, 2.5.7). |
+| `eval.a11y.not-color-only` | Accessibility | Is meaning conveyed by more than colour alone? | high | Some meaning is shown by colour alone → Add text labels or icons to colour-coded status and errors (WCAG 1.4.1). |
+| `eval.errors.destructive-protected` | Error prevention | Are destructive or irreversible actions protected? | critical | A destructive action isn't protected → Add a confirmation for irreversible actions, or an undo for reversible ones. |
+| `eval.feedback.outcomes` | Feedback | Do users learn the outcome of what they did? | high | Users may not learn the outcome of their actions → Confirm success and explain failures where users will notice, and show progress for longer operations. |
+| `eval.consistency.patterns` | Consistency | Are similar things done the same way throughout? | low | Similar things are done in different ways → Use one pattern for each kind of action and information throughout. |
+| `eval.ds.compliant` | Design-system compliance | Is the solution built from the design system's components? | high | The solution relies on elements outside the design system → Build from the design system's components, and mark anything missing as a net-new component. |
+| `eval.states.represented` | Required states | Does the solution show its loading, empty and error states? | high | Loading, empty or error states aren't described → Describe what users see while loading, when there's nothing to show, and when something fails. |
+| `eval.responsive.adapts` | Responsive behavior | Does the solution work on the devices people will use? | medium | It isn't clear how this works on the expected devices → Describe how the layout adapts to each expected device, especially phones. |

@@ -2,11 +2,13 @@ import { z } from "zod";
 import {
   decisionResultSchema,
   decisionTypeSchema,
+  evaluationRunSchema,
   gapResolutionKindSchema,
   layoutBrainstormSchema,
   policyOutcomeSchema,
   uxStateSchema,
   type DecisionType,
+  type EvaluationRun,
   type LayoutBrainstorm,
 } from "@/lib/schemas";
 
@@ -19,6 +21,7 @@ import {
 
 export const SESSION_VERSION = 1;
 const MAX_LAYOUT_RUNS = 5;
+const MAX_EVALUATION_RUNS = 5;
 
 const timestamp = z.iso.datetime();
 
@@ -35,6 +38,7 @@ export const sessionEventSchema = z.object({
     "gap-settled",
     "gap-reopened",
     "layouts-generated",
+    "evaluated",
   ]),
   detail: z.string(),
 });
@@ -74,6 +78,8 @@ export const analysisSessionSchema = z.object({
   gapSettlements: z.array(sessionGapSettlementSchema),
   /** Layout Brainstorm runs, newest first (at most MAX_LAYOUT_RUNS). */
   layouts: z.array(layoutBrainstormSchema).default([]),
+  /** UX evaluations, newest first (at most MAX_EVALUATION_RUNS). */
+  evaluations: z.array(evaluationRunSchema).default([]),
   events: z.array(sessionEventSchema),
 });
 
@@ -104,6 +110,7 @@ export function createSession(brief: string, id: string = crypto.randomUUID(), a
     accepted: [],
     gapSettlements: [],
     layouts: [],
+    evaluations: [],
     events: [{ at, type: "created", detail: brief }],
   };
 }
@@ -125,6 +132,7 @@ export function withState(
     accepted: [],
     gapSettlements: [],
     layouts: [],
+    evaluations: [],
   };
   return source.kind === "edited"
     ? touch(next, "state-edited", "Designer edited the UX state; earlier decisions were cleared.")
@@ -197,11 +205,25 @@ export function withLayouts(session: AnalysisSession, run: LayoutBrainstorm): An
   );
 }
 
+export function withEvaluation(session: AnalysisSession, run: EvaluationRun): AnalysisSession {
+  const scores = run.evaluations.map((e) => `${run.subjects.find((s) => s.id === e.subjectId)?.label ?? e.subjectId} ${e.overallScore}`);
+  return touch(
+    { ...session, evaluations: [run, ...session.evaluations.filter((r) => r.id !== run.id)].slice(0, MAX_EVALUATION_RUNS) },
+    "evaluated",
+    `${scores.join(", ")} via ${run.provider} (${run.model})`
+  );
+}
+
+/** True when the decisions changed since a run was made against them. */
+export function decisionsChangedSince(session: AnalysisSession, basedOn: readonly { decision: string; choice: string }[]): boolean {
+  const current = session.outcome?.decisions ?? [];
+  if (current.length !== basedOn.length) return true;
+  return basedOn.some((b) => !current.some((d) => d.decision === b.decision && d.result.choice === b.choice));
+}
+
 /** True when the decisions changed since the directions were generated. */
 export function layoutsStale(session: AnalysisSession, run: LayoutBrainstorm): boolean {
-  const current = session.outcome?.decisions ?? [];
-  if (current.length !== run.basedOn.length) return true;
-  return run.basedOn.some((b) => !current.some((d) => d.decision === b.decision && d.result.choice === b.choice));
+  return decisionsChangedSince(session, run.basedOn);
 }
 
 /** A short label for session lists. */

@@ -121,6 +121,11 @@ export function buildGenerationSchema(vocab: GenerationVocabulary) {
   return makeSchemas(vocab).output;
 }
 
+/** One direction, held to the same per-request vocabulary (e.g. before evaluating it). */
+export function buildVariantSchema(vocab: GenerationVocabulary) {
+  return makeSchemas(vocab).variant;
+}
+
 /**
  * Deterministic checks computed in code for each direction — never by the
  * generator — so they mean the same thing whichever model wrote it.

@@ -9,25 +9,26 @@ import { LayoutDirections } from "@/components/analyze/LayoutDirections";
 import { QuestionsTable } from "@/components/analyze/QuestionsTable";
 import { SolutionPanel } from "@/components/analyze/SolutionPanel";
 import { StateReview } from "@/components/analyze/StateReview";
-import { requestAnalysis, requestLayouts, requestState } from "@/lib/client/api";
+import { requestAnalysis, requestEvaluation, requestLayouts, requestState } from "@/lib/client/api";
 import { PROVIDER_LABELS, card, secondaryButton } from "@/lib/client/format";
 import {
   acceptDecision,
   addOverride,
   createSession,
+  decisionsChangedSince,
   isAccepted,
-  layoutsStale,
   removeOverride,
   reopenGap,
   sessionTitle,
   settleGap,
   withAnalysis,
+  withEvaluation,
   withLayouts,
   withState,
   type AnalysisSession,
 } from "@/lib/session/session";
 import { deleteSession, downloadSession, loadSessions, saveSession } from "@/lib/session/storage";
-import type { DecisionQuestion, DecisionType, GapResolutionKind } from "@/lib/schemas";
+import type { DecisionQuestion, DecisionType, GapResolutionKind, LayoutBrainstorm } from "@/lib/schemas";
 import analysisQuestions from "@knowledge/questions/analysis.json";
 
 // The question set is static knowledge; import the file directly rather than
@@ -37,7 +38,7 @@ const QUESTIONS = analysisQuestions as unknown as DecisionQuestion[];
 export default function AnalyzePage() {
   const [sessions, setSessions] = useState<AnalysisSession[]>([]);
   const [session, setSession] = useState<AnalysisSession | null>(null);
-  const [busy, setBusy] = useState<null | "state" | "decide" | "policy" | "layouts">(null);
+  const [busy, setBusy] = useState<null | "state" | "decide" | "policy" | "layouts" | "evaluate">(null);
   const [error, setError] = useState<string | null>(null);
   const [inspecting, setInspecting] = useState<DecisionType | null>(null);
 
@@ -83,6 +84,13 @@ export default function AnalyzePage() {
   async function brainstorm(current: AnalysisSession, instruction: string) {
     await run("layouts", async () => {
       commit(withLayouts(current, await requestLayouts(current, instruction)));
+    });
+  }
+
+  async function evaluateDirections(current: AnalysisSession, layoutRun: LayoutBrainstorm) {
+    await run("evaluate", async () => {
+      const subjects = layoutRun.output.variants.map((variant) => ({ kind: "direction" as const, variant, layoutRunId: layoutRun.id }));
+      commit(withEvaluation(current, await requestEvaluation(current, subjects)));
     });
   }
 
@@ -218,9 +226,12 @@ export default function AnalyzePage() {
             key={session.id}
             outcome={outcome}
             runs={session.layouts}
-            stale={(r) => layoutsStale(session, r)}
+            evaluations={session.evaluations}
+            stale={(basedOn) => decisionsChangedSince(session, basedOn)}
             busy={busy === "layouts"}
+            evaluating={busy === "evaluate"}
             onGenerate={(instruction) => brainstorm(session, instruction)}
+            onEvaluate={(layoutRun) => evaluateDirections(session, layoutRun)}
           />
 
           {session.results && outcome && <QuestionsTable questions={QUESTIONS} results={session.results} />}

@@ -27,8 +27,20 @@ export class MockDecisionProvider implements DecisionProvider {
 
   async evaluate(state: DecisionState, questions: readonly DecisionQuestion[]): Promise<DecisionResult[]> {
     const text = JSON.stringify({ ...state, ambiguities: [] }).toLowerCase();
-    return questions.map((q) => answer(q, text));
+    const scoped = new Map<string, string>();
+    return questions.map((q) => {
+      if (!q.scope) return answer(q, text);
+      if (!scoped.has(q.scope)) scoped.set(q.scope, JSON.stringify(at(state, q.scope) ?? {}).toLowerCase());
+      return answer(q, scoped.get(q.scope)!);
+    });
   }
+}
+
+function at(state: DecisionState, path: string): unknown {
+  return path.split(".").reduce<unknown>(
+    (node, key) => (node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined),
+    state
+  );
 }
 
 function countHits(text: string, keywords: readonly string[]): number {

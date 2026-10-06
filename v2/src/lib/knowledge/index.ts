@@ -2,6 +2,8 @@ import { z } from "zod";
 import manifestJson from "@knowledge/manifest.json";
 import policyJson from "@knowledge/policy.json";
 import analysisQuestionsJson from "@knowledge/questions/analysis.json";
+import evaluationQuestionsJson from "@knowledge/questions/evaluation.json";
+import evaluatorJson from "@knowledge/evaluator.json";
 import capabilitiesJson from "@knowledge/capabilities.json";
 import compositionsJson from "@knowledge/compositions.json";
 import decisionCapabilitiesJson from "@knowledge/decision-capabilities.json";
@@ -23,6 +25,9 @@ import {
   compositionRecipeSchema,
   DECISION_OPTIONS,
   decisionQuestionSchema,
+  EVALUATION_CATEGORIES,
+  evaluationCategorySchema,
+  type EvaluationCategory,
   kebabIdSchema,
   semverSchema,
   uxPatternSchema,
@@ -182,3 +187,49 @@ export const UX_RULES: readonly UXRule[] = z.array(uxRuleSchema).parse([
 
 /** The UX pattern registry (§18). */
 export const UX_PATTERNS: readonly UXPattern[] = z.array(uxPatternSchema).parse(patternsJson);
+
+/** "task-effectiveness" → "taskEffectiveness" */
+export function evaluationCategoryOf(question: DecisionQuestion): EvaluationCategory {
+  return evaluationCategorySchema.parse(question.category.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase()));
+}
+
+/** PRD §28 atomic evaluation questions (templates; scoped per solution at request time). */
+export const EVALUATION_QUESTIONS: readonly DecisionQuestion[] = z
+  .array(decisionQuestionSchema)
+  .parse(evaluationQuestionsJson)
+  .map((q) => {
+    if (q.purpose !== "evaluation") throw new Error(`${q.id}: purpose must be "evaluation"`);
+    if (q.type === "choice") throw new Error(`${q.id}: evaluation questions are noul or score`);
+    evaluationCategoryOf(q);
+    return q;
+  });
+
+const severitySchema = z.enum(["critical", "high", "medium", "low"]);
+
+export const evaluatorConfigSchema = z
+  .object({
+    categoryWeights: z.record(evaluationCategorySchema, z.number().positive()),
+    /** Share of a category score that comes from questions when checks also apply. */
+    questionShare: probability,
+    /** A failed critical check caps its category (and the overall score) here. */
+    criticalCategoryCap: z.number().min(0).max(100),
+    criticalOverallCap: z.number().min(0).max(100),
+    /** Noul answers below `failBelow` raise the configured issue; below `unsureBelow`, a low-severity "may" issue. */
+    unsureBelow: probability,
+    failBelow: probability,
+    questions: z.record(
+      z.string(),
+      z.object({ severity: severitySchema, issue: z.string().min(1), recommendation: z.string().min(1) })
+    ),
+  })
+  .superRefine((c, ctx) => {
+    const ids = new Set(EVALUATION_QUESTIONS.map((q) => q.id));
+    for (const id of ids) if (!c.questions[id]) ctx.addIssue({ code: "custom", message: `evaluator.questions is missing ${id}` });
+    for (const id of Object.keys(c.questions)) if (!ids.has(id)) ctx.addIssue({ code: "custom", message: `evaluator.questions.${id} has no question` });
+    const covered = new Set(EVALUATION_QUESTIONS.map(evaluationCategoryOf));
+    for (const category of EVALUATION_CATEGORIES) {
+      if (!covered.has(category)) ctx.addIssue({ code: "custom", message: `no evaluation question for ${category}` });
+    }
+  });
+
+export const EVALUATOR = evaluatorConfigSchema.parse(evaluatorJson);
