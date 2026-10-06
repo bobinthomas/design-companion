@@ -77,6 +77,10 @@ describe("golden test: expense-review dashboard (PRD §41)", () => {
   it("selects patterns and components from the registries, with no gaps in the default system", () => {
     expect(outcome.patterns[0]).toMatchObject({ pattern: "data-table", role: "primary" });
     expect(outcome.patterns.map((p) => p.pattern)).toEqual(expect.arrayContaining(["filtering", "search", "detail-page"]));
+    // Nothing about this brief is a checkout, comparison or sign-up flow.
+    for (const unrelated of ["checkout", "comparison", "authentication", "onboarding", "wizard"]) {
+      expect(outcome.patterns.map((p) => p.pattern)).not.toContain(unrelated);
+    }
     expect(outcome.components.map((c) => c.component)).toEqual(
       expect.arrayContaining(["data-table", "drawer", "search-field", "pagination", "dialog", "toast", "badge", "empty-state"])
     );

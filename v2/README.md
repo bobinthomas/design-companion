@@ -33,22 +33,23 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 6. [The UX state](#the-ux-state)
 7. [Decision-model layer](#decision-model-layer)
 8. [UX Policy](#ux-policy)
-9. [Design System Intelligence](#design-system-intelligence)
-10. [Knowledge base](#knowledge-base)
-11. [API reference](#api-reference)
-12. [User interface](#user-interface)
-13. [Testing](#testing)
-14. [Deployment](#deployment)
-15. [Project structure](#project-structure)
-16. [Design decisions](#design-decisions)
-17. [Known limitations](#known-limitations)
-18. [Roadmap](#roadmap)
+9. [UX Analyze](#ux-analyze)
+10. [Design System Intelligence](#design-system-intelligence)
+11. [Knowledge base](#knowledge-base)
+12. [API reference](#api-reference)
+13. [User interface](#user-interface)
+14. [Testing](#testing)
+15. [Deployment](#deployment)
+16. [Project structure](#project-structure)
+17. [Design decisions](#design-decisions)
+18. [Known limitations](#known-limitations)
+19. [Roadmap](#roadmap)
 
 ---
 
 ## Status
 
-V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–5 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
+V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–6 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
 
 | # | Milestone | Status |
 |---|---|---|
@@ -57,19 +58,20 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 | 3 | Design System Intelligence: capability vocabulary, normalizer, capability mapping, gap detection, registry APIs | ✅ Done |
 | 4 | UX Policy: rule engine, policy engine, pattern and component resolvers, 43 rules, 8 patterns, expense-dashboard golden test | ✅ Done |
 | 5 | Knowledge base: 50 rules, 14 patterns, 35 questions, readable review document, second golden scenario | ✅ Done (awaiting designer review) |
-| 6 | UX Analyze + Decision Inspector + overrides + audit trail | Next |
-| 7 | Decision-guided Layout Brainstorm | Planned |
+| 6 | UX Analyze screen: state extraction and review, decision cards, Decision Inspector, overrides, gap resolution, session trace | ✅ Done |
+| 7 | Decision-guided Layout Brainstorm | Next |
 | 8 | UX Evaluation + Compare Solutions | Planned |
 | 9 | UI Copy and Feedback Summary migration; Design System Review screen | Planned |
 | 10 | Benchmark (LLM-only vs LLM + design system vs decision-guided), docs, deploy | Planned |
 
 **What works today:**
-- The full deterministic pipeline, from UX state to decisions, patterns, components and design-system gaps, exposed as JSON APIs (`POST /api/ux/decide`).
+- **UX Analyze** (`/analyze`): brief → reviewable UX state → decisions you can inspect, accept or override → patterns, components and design-system gaps, with an exportable trace.
+- The full pipeline as JSON APIs (`/api/ux/state`, `/api/ux/decide`, `/api/ux/analyze`).
 - The Settings screen.
-- 195 passing tests.
+- 204 passing tests.
 - A designer-readable copy of all UX knowledge: [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md).
 
-The designer-facing screens (UX Analyze, Evaluate, Copy, Feedback, Knowledge, Design System Review) start in Milestone 6. Until then their header links lead to 404 pages.
+The remaining screens (Evaluate, Copy, Feedback, Knowledge, Design System Review) arrive in Milestones 7–9. Until then their header links lead to 404 pages.
 
 ---
 
@@ -461,6 +463,101 @@ With real Jev confidences (e.g. 0.97 / 0.91) the data-table decision lands aroun
 
 ---
 
+## UX Analyze
+
+[src/app/analyze/page.tsx](src/app/analyze/page.tsx) · [src/components/analyze/](src/components/analyze/) · [src/lib/session/](src/lib/session/)
+
+The first designer-facing screen. It follows the PRD §46 journey, and **the designer reviews the state before any decision-model request is spent**.
+
+```text
+1. Brief ──► /api/ux/state ──► 2. Review the UX state ──► /api/ux/decide ──► 3. Decisions
+                               (edit constraints, confirm        │              (accept · inspect · override)
+                                assumptions, or edit JSON)       │                     │
+                                                                 ▼                     ▼
+                                           4. Patterns · components · gaps   re-run policy only:
+                                              (settle gaps with a reason)    earlier results reused,
+                                                                             no new Jev request
+```
+
+### 1. Brief → UX state
+
+[state/extract.ts](src/lib/ux/state/extract.ts) prompts the visitor's LLM to **describe, not judge**:
+- It writes "Roughly 200 pending reports per manager per week", never "high", and never names a UI.
+- It chooses only the hard constraints (device, frequency, expertise, audience, accessibility) from fixed vocabularies, quoted in the prompt.
+- It records every assumption it made as an *ambiguity* for the designer to confirm.
+
+The output is validated against `uxStateSchema`, and the designer's own words are kept as `brief` even if the model paraphrases them.
+
+**Without an LLM key**, the closest prepared demo state is returned (expense dashboard or subscription sign-up, chosen by keywords). A notice says so plainly, including "not your brief" when the brief doesn't match the example.
+
+### 2. State review
+
+The state is summarized: product, users, goal, tasks, data and actions.
+- **Hard constraints** are editable in place, because policy reads them directly as facts. Switching the device to *mobile*, for example, triggers the small-screen vetoes.
+- **Assumptions** can be confirmed one by one.
+- **Edit as JSON** opens the full state, validated before it's used.
+
+Any edit is recorded as `state-edited` and clears derived decisions, so nothing stale survives.
+
+### 3. Decisions
+
+One card per decision (PRD §47) shows:
+- the choice;
+- confidence as a percentage and a band: *Confident*, *Uncertain* or *Needs review*;
+- **who decided it**: *Determined by UX rules*, *Decision-model judgment*, *Designer decision* or *Default*;
+- the top reasons and any ruled-out options;
+- **Accept** and **Inspect / change**.
+
+A banner names the decision provider (Jev, your LLM, or demo judgments), repeats the fallback notices, and shows policy warnings such as an override that contradicts a critical rule.
+
+### 4. Decision Inspector
+
+A slide-over dialog with focus management and Escape to close, laid out as PRD §17:
+
+| Section | Contents |
+|---|---|
+| Decision / Recommendation | The question, the choice, who decided, the confidence band |
+| Why | The rule reasons, plus the decision model's rating when it agrees |
+| Questions (evidence) | Each question with ✓ / ✗ / ? (or the chosen option or score level), its probability and which provider answered |
+| Rules | One entry per rule: code, tier and priority; what it recommends, avoids or **rules out**; its reason |
+| Alternatives | Each rejected option and why, with vetoes marked |
+| Needs from the design system | The capabilities this choice requires |
+| Override | Choose another option and give a reason. Vetoed options are labelled, and choosing one shows the critical rule inline; it's allowed, and the conflict is recorded |
+
+After an override, the Inspector shows *"You changed this from X to Y"*, the reason, *"the rules themselves are unchanged"*, and a button to return to the system recommendation.
+
+### 5. Patterns, components, gaps
+
+Three panels:
+- **Patterns:** the primary pattern and its fit, plus the required states.
+- **Components:** each with the capabilities it serves, and whether it's composed from parts.
+- **Gaps:** each with its behavior (blocks generation / net-new component needed / warning). Generation-blocked state is announced.
+
+Each open gap can be **resolved** (accept the risk, extend or add a component) with a recorded reason, or reopened later. Settlements go into the pipeline (`gapSettlements`), so an accepted critical gap stops blocking.
+
+Below the panels, a collapsible table lists **all 35 questions and their raw answers**.
+
+### Session trace (§29 / §50)
+
+[session/session.ts](src/lib/session/session.ts) defines `AnalysisSession`, a versioned, schema-validated trace. It holds:
+- the brief and the state, with its source (LLM model, demo, or edited);
+- the decision-model results and provider;
+- the full policy outcome, including its knowledge versions;
+- overrides, acceptances and gap settlements;
+- an **event log**: created, state-extracted, state-edited, decided, accepted, overridden, override-removed, gap-settled, gap-reopened.
+
+Every update is a pure function. Two consistency rules:
+- **Acceptances are tied to the accepted choice.** If an override or re-run changes the choice, the acceptance lapses.
+- **A state edit clears everything derived from the old state.**
+
+[session/storage.ts](src/lib/session/storage.ts) keeps the 20 most recent sessions in `localStorage` (`design-companion-v2:analysis-sessions`). Reads are defensive: invalid entries are skipped and unavailable storage is tolerated. Sessions can be reopened from the header picker, deleted, or **exported as JSON**.
+
+### Re-running without spending Jev
+
+The client ([client/api.ts](src/lib/client/api.ts)) sends the session's earlier `results` with every override or gap action. The server re-runs policy only and says so in a notice. Only **Re-run decisions with fresh judgments** calls the decision model again.
+
+---
+
 ## Design System Intelligence
 
 [src/lib/design-system/](src/lib/design-system/)
@@ -724,6 +821,25 @@ Endpoints that may call a decision model also accept optional credentials from S
 }
 ```
 
+### `POST /api/ux/state`
+
+Brief → UX state (interpretation only). Uses `clientConfig` if given.
+
+```jsonc
+// request
+{ "brief": "Design an expense-review dashboard for managers." }
+// response
+{ "state": { /* UXState */ }, "source": "llm" | "demo", "model": "anthropic:claude-sonnet-5", "notices": [] }
+```
+
+### `POST /api/ux/analyze`
+
+PRD §34 one-shot analysis: prompt → state → decision model → policy → patterns → components → gaps. Takes the same `overrides`, `gapSettlements` and `designSystem` as `/decide`, and returns the `/decide` response plus `stateSource`.
+
+```jsonc
+{ "prompt": "Design an expense-review dashboard for managers." }
+```
+
 ### `POST /api/ux/decide`
 
 The full pipeline: decision model (unless results are supplied), then UX policy, patterns, requirements, design-system resolution, components and gaps.
@@ -735,6 +851,9 @@ The full pipeline: decision model (unless results are supplied), then UX policy,
   "results": [ /* optional: reuse an earlier run's results, so the model isn't called again */ ],
   "overrides": [
     { "decision": "actionConfirmation", "choice": "undo-toast", "reason": "Rejections are reversible within 24h" }
+  ],
+  "gapSettlements": [
+    { "gapId": "gap.row-selection", "kind": "accept-risk", "reason": "Bulk select ships in v2", "timestamp": "2026-10-06T12:00:00.000Z" }
   ],
   "designSystem": { /* optional DesignSystem; defaults to the bundled one */ }
 }
@@ -859,7 +978,8 @@ Resolves capability requirements against a design system (the default if omitted
 | `/` | ✅ | Home: positioning, the six-step pipeline (Understand → Decide → Constrain → Generate → Validate → Direct), entry cards |
 | `/settings` | ✅ | LLM provider key and model override; **Decision model (Jev)** section with your own Cloudflare account and today's remaining shared quota |
 | Header | ✅ | V2 badge, primary nav, **Open V1** link, provider status pill (Live / Demo data) |
-| `/analyze`, `/evaluate`, `/copy`, `/feedback`, `/knowledge` | Milestones 6–9 | Linked from the header and home page; not built yet |
+| `/analyze` | ✅ | **UX Analyze**: brief, state review, decision cards, Decision Inspector, overrides, patterns / components / gaps, questions table, session picker and trace export (see [UX Analyze](#ux-analyze)) |
+| `/evaluate`, `/copy`, `/feedback`, `/knowledge` | Milestones 8–9 | Linked from the header and home page; not built yet |
 | `/design-system` | Milestone 9 | Design System Review (import, report, capability matrix, gaps); not yet linked |
 
 Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V1.
@@ -869,7 +989,7 @@ Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V
 ## Testing
 
 ```bash
-npm test     # 11 suites, 195 tests
+npm test     # 12 suites, 204 tests
 ```
 
 | Suite | Covers |
@@ -883,10 +1003,19 @@ npm test     # 11 suites, 195 tests
 | `tests/ux/rules.test.ts` | Condition evaluation (noul thresholds and `min`, choices with minimum probability, scores, ordinal facts, missing results never matching) and `all` / `any` / `none` evidence |
 | `tests/ux/policy.test.ts` | The expense-dashboard **golden test** (5–10 decisions, expected choices, Inspector-ready explanations, the veto, the review flag, patterns, components, no gaps, critical requirement priority, determinism); overrides (record, rules kept, requirements recomputed, warnings); the §21f example through the full pipeline; and the §13 guarantees: visual rules can't outvote accessibility, the design-system tier breaks ties but not clear preferences, priors decide alone when no rule applies |
 | `tests/ux/subscription.test.ts` | **Second golden scenario**: mobile-first subscription sign-up and checkout. Steps with progress (multi-step, stepper, wizard), split view vetoed on the phone, no detail view without a list, the wizard vs short-auth conflict surfaced as uncertain, persistent inline errors, checkout-family patterns, no gaps |
+| `tests/ux/analyze.test.ts` | State extraction (the describe-don't-judge prompt, labelled demo states, the designer's brief preserved); `analyzeState` reusing results, rejecting unknown questions, applying gap settlements; the session trace (event log, schema-valid round trip, acceptances tied to choices, state edits clearing derived data) |
 | `tests/ux/knowledge-doc.test.ts` | DSL rendering of rules (including vetoes as RULE OUT) and that `docs/KNOWLEDGE.md` matches `knowledge/` |
 | `tests/design-system/pipeline.test.ts` | Normalizer (names, states, variants, tokens, findings), capability mapping (declared, inferred, decision-model confirmation and rejection, designer review), and the full §21f worked example including override and accepted risk |
 
 Tests run against the deterministic mock and fake bindings, so they need no network or credentials.
+
+The UX Analyze screen was also checked end to end in Chrome against `next dev`, scripted through the DOM:
+- brief → demo state → 10 decisions → the Inspector (evidence, grouped rules, alternatives);
+- picking a vetoed option shows the warning; an override to undo-toast is applied and recorded;
+- reload, then the session is restored from the picker and Accept works;
+- no console errors.
+
+That run caught two bugs the unit tests had missed, now fixed: a Checkout pattern falsely matching the expense dashboard (a mock keyword), and rules repeated once per effect in the Inspector.
 
 ---
 
@@ -929,18 +1058,22 @@ v2/
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                Home
+│   │   ├── analyze/page.tsx        UX Analyze
 │   │   ├── settings/page.tsx       Settings (LLM + Jev)
 │   │   ├── layout.tsx              Root layout + header
 │   │   └── api/
 │   │       ├── decision-model/{evaluate,quota}/route.ts
 │   │       ├── design-system/{capabilities,default,import,map,gaps}/route.ts
-│   │       └── ux/decide/route.ts
+│   │       └── ux/{state,decide,analyze}/route.ts
 │   ├── components/
 │   │   ├── AppHeader.tsx
-│   │   └── CloudflareSettings.tsx
+│   │   ├── CloudflareSettings.tsx
+│   │   └── analyze/                BriefForm, StateReview, DecisionCard, DecisionInspector, SolutionPanel, QuestionsTable
 │   └── lib/
 │       ├── ai/                     LLM dispatch (from V1) + validation retry
 │       ├── api.ts                  Shared request parsing and decision context
+│       ├── client/                 Browser-side API calls (credentials attached) and display formatting
+│       ├── session/                Analysis session trace + localStorage persistence
 │       ├── cloudflare.ts           Worker bindings and client IP
 │       ├── decision-model/         Provider interface, adapters, confidence, quota, fallback chain
 │       ├── design-system/          Tokens, normalizer, capability mapping, import, registry, gaps, default
@@ -954,7 +1087,9 @@ v2/
 │       │   ├── policy/requirements.ts   Capability requirements + required states
 │       │   ├── patterns/resolve.ts      Pattern matching
 │       │   ├── components/resolve.ts    Component selection from resolutions
-│       │   ├── pipeline.ts              runPolicy(): the deterministic pipeline
+│       │   ├── pipeline.ts              runPolicy(): the deterministic pipeline (+ gap settlements)
+│       │   ├── analyze.ts               analyzeState(): decision model + policy, shared by the routes
+│       │   ├── state/extract.ts         Brief → UX state (LLM prompt, demo fallback)
 │       │   └── fixtures/                Golden states: expense dashboard, subscription sign-up
 │       └── nav.ts                  Primary navigation
 ├── scripts/knowledge-doc.ts        npm run knowledge:doc
@@ -1009,21 +1144,23 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 - **The 50-rule ceiling** (the PRD's 30–50 target) is enforced by a test. Content and copy rules arrive with UI Copy in Milestone 9.
 - **Mock judgments shape the golden test.** With real Jev answers, confidences and some close calls (layout, status feedback, navigation) may differ.
 - **Only the JSON import exists.** Token files, Storybook, repository and Figma import (§37 phases 2–5) are later work.
-- **No designer-facing screens yet** beyond Home and Settings.
+- **Only UX Analyze is built so far** among the designer-facing screens (plus Home and Settings).
+- **The screen was verified by DOM scripting, not by eye.** Chrome screenshots weren't available, so the layout (especially at phone widths) still needs a visual review.
+- **The state editor** offers in-place edits for hard constraints and assumptions only; everything else is edited as JSON.
 - **PRD §33 types the provider's state as `UXState`;** the implementation accepts any object. The architecture doc will reflect this.
 
 ---
 
 ## Roadmap
 
-**Milestone 6, UX Analyze (next):**
-- An LLM prompt that extracts the UX state from a brief (describe, don't judge), with ambiguities.
-- The `/analyze` screen: an editable state, the questions and answers, decision cards labelled "Determined by UX rules" vs "AI-generated" (§47), and the Decision Inspector.
-- Accept and override actions, re-run without another Jev request, and gap resolution.
-- A session trace in localStorage, exportable as JSON (§29 / §50).
+**Milestone 7, Layout Brainstorm (next):**
+- Constrained generation of 2–3 layout directions (Task first / Exception first / Overview first) from the policy outcome.
+- A per-request schema that allows only registry components and known, non-blocking gap ids, with gap regions shown as placeholders.
+- Each direction shows its rationale, supporting decisions, rules, components, advantages and trade-offs.
+- Generation is refused while the outcome is blocked.
+- Directions are added to the session trace.
 
 **Then:**
-- Milestone 7: constrained Layout Brainstorm (Task first / Exception first / Overview first).
 - Milestone 8: evaluation and Compare Solutions.
 - Milestone 9: UI Copy, Feedback Summary and Design System Review.
 - Milestone 10: the three-system benchmark, architecture docs and deployment.

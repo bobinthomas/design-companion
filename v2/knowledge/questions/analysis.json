@@ -728,11 +728,12 @@
     "mock": {
       "keywords": {
         "true": [
-          "payment",
+          "payment details",
+          "pay now",
           "checkout",
-          "purchase",
           "subscribe",
-          "credit card"
+          "credit card",
+          "purchase flow"
         ]
       },
       "default": "false"
