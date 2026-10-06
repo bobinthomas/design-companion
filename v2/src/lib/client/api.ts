@@ -4,6 +4,7 @@ import { loadCloudflareSettings, loadSettings } from "@/lib/ai/clientSettings";
 import type { AnalysisResponse } from "@/lib/ux/analyze";
 import type { StateExtraction } from "@/lib/ux/state/extract";
 import type { AnalysisSession } from "@/lib/session/session";
+import type { LayoutBrainstorm } from "@/lib/schemas";
 
 /** Credentials saved in Settings, attached to every request that may use them. */
 function credentials() {
@@ -64,4 +65,17 @@ export async function requestAnalysis(session: AnalysisSession, fresh: boolean) 
       versions: a.versions,
     },
   };
+}
+
+/** PRD §23: directions for the session's current decisions. Policy is re-run on the server, never trusted from here. */
+export function requestLayouts(session: AnalysisSession, instruction?: string): Promise<LayoutBrainstorm> {
+  const { clientConfig } = credentials();
+  return postJson("/api/ux/layouts", {
+    ...(clientConfig ? { clientConfig } : {}),
+    state: session.state,
+    results: session.results,
+    overrides: session.overrides,
+    gapSettlements: session.gapSettlements,
+    ...(instruction?.trim() ? { instruction: instruction.trim() } : {}),
+  });
 }

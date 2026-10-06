@@ -34,22 +34,23 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 7. [Decision-model layer](#decision-model-layer)
 8. [UX Policy](#ux-policy)
 9. [UX Analyze](#ux-analyze)
-10. [Design System Intelligence](#design-system-intelligence)
-11. [Knowledge base](#knowledge-base)
-12. [API reference](#api-reference)
-13. [User interface](#user-interface)
-14. [Testing](#testing)
-15. [Deployment](#deployment)
-16. [Project structure](#project-structure)
-17. [Design decisions](#design-decisions)
-18. [Known limitations](#known-limitations)
-19. [Roadmap](#roadmap)
+10. [Layout Brainstorm](#layout-brainstorm)
+11. [Design System Intelligence](#design-system-intelligence)
+12. [Knowledge base](#knowledge-base)
+13. [API reference](#api-reference)
+14. [User interface](#user-interface)
+15. [Testing](#testing)
+16. [Deployment](#deployment)
+17. [Project structure](#project-structure)
+18. [Design decisions](#design-decisions)
+19. [Known limitations](#known-limitations)
+20. [Roadmap](#roadmap)
 
 ---
 
 ## Status
 
-V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–6 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
+V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–7 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
 
 | # | Milestone | Status |
 |---|---|---|
@@ -59,19 +60,19 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 | 4 | UX Policy: rule engine, policy engine, pattern and component resolvers, 43 rules, 8 patterns, expense-dashboard golden test | ✅ Done |
 | 5 | Knowledge base: 50 rules, 14 patterns, 35 questions, readable review document, second golden scenario | ✅ Done (awaiting designer review) |
 | 6 | UX Analyze screen: state extraction and review, decision cards, Decision Inspector, overrides, gap resolution, session trace | ✅ Done |
-| 7 | Decision-guided Layout Brainstorm | Next |
-| 8 | UX Evaluation + Compare Solutions | Planned |
+| 7 | Decision-guided Layout Brainstorm: constrained directions, gap placeholders, refusal when blocked, deterministic checks | ✅ Done |
+| 8 | UX Evaluation + Compare Solutions | Next |
 | 9 | UI Copy and Feedback Summary migration; Design System Review screen | Planned |
 | 10 | Benchmark (LLM-only vs LLM + design system vs decision-guided), docs, deploy | Planned |
 
 **What works today:**
-- **UX Analyze** (`/analyze`): brief → reviewable UX state → decisions you can inspect, accept or override → patterns, components and design-system gaps, with an exportable trace.
-- The full pipeline as JSON APIs (`/api/ux/state`, `/api/ux/decide`, `/api/ux/analyze`).
+- **UX Analyze** (`/analyze`): brief → reviewable UX state → decisions you can inspect, accept or override → patterns, components and design-system gaps → **layout directions** built only from your design system, with an exportable trace.
+- The full pipeline as JSON APIs (`/api/ux/state`, `/api/ux/decide`, `/api/ux/analyze`, `/api/ux/layouts`).
 - The Settings screen.
-- 204 passing tests.
+- 216 passing tests.
 - A designer-readable copy of all UX knowledge: [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md).
 
-The remaining screens (Evaluate, Copy, Feedback, Knowledge, Design System Review) arrive in Milestones 7–9. Until then their header links lead to 404 pages.
+The remaining screens (Evaluate, Copy, Feedback, Knowledge, Design System Review) arrive in Milestones 8–9. Until then their header links lead to 404 pages.
 
 ---
 
@@ -182,7 +183,7 @@ Designer brief
        │  valid components + gaps (block / net-new / warn)
        ▼
 ┌──────────────────────────────┐
-│ GENERATION           (M7)    │   per-request schema: only registry
+│ GENERATION                   │   per-request schema: only registry
 │                              │   components, only known gap ids
 └──────┬───────────────────────┘
        ▼
@@ -544,7 +545,8 @@ Below the panels, a collapsible table lists **all 35 questions and their raw ans
 - the decision-model results and provider;
 - the full policy outcome, including its knowledge versions;
 - overrides, acceptances and gap settlements;
-- an **event log**: created, state-extracted, state-edited, decided, accepted, overridden, override-removed, gap-settled, gap-reopened.
+- an **event log**: created, state-extracted, state-edited, decided, accepted, overridden, override-removed, gap-settled, gap-reopened, layouts-generated;
+- the last 5 Layout Brainstorm runs.
 
 Every update is a pure function. Two consistency rules:
 - **Acceptances are tied to the accepted choice.** If an override or re-run changes the choice, the acceptance lapses.
@@ -555,6 +557,101 @@ Every update is a pure function. Two consistency rules:
 ### Re-running without spending Jev
 
 The client ([client/api.ts](src/lib/client/api.ts)) sends the session's earlier `results` with every override or gap action. The server re-runs policy only and says so in a notice. Only **Re-run decisions with fresh judgments** calls the decision model again.
+
+---
+
+## Layout Brainstorm
+
+[src/lib/ux/layouts/](src/lib/ux/layouts/) · [src/app/api/ux/layouts/route.ts](src/app/api/ux/layouts/route.ts) · [src/components/analyze/LayoutDirections.tsx](src/components/analyze/LayoutDirections.tsx)
+
+PRD §22–23. The last step of UX Analyze: **2–3 layout directions** inside the space the decisions define. The LLM explores that space; it doesn't define it.
+
+```text
+policy outcome ──► blocked? ──yes──► refused (409), naming the gap and the decision to change
+                      │ no
+                      ▼
+   generationVocabulary(outcome) ──► per-request schema
+                      │
+        LLM configured? ──yes──► layout prompt + the constrained space ──► validated (one retry with the error)
+                      │ no
+                      ▼
+            composeDirections() — deterministic draft, same schema
+                      │
+                      ▼
+       checkDirections() — confidence, decisions shown, components left out
+                      │
+                      ▼
+            LayoutBrainstorm ──► session trace ("layouts-generated")
+```
+
+### What constrains a direction
+
+`generationVocabulary()` turns the policy outcome into the schema the generator is held to (`buildGenerationSchema` in [generation.ts](src/lib/schemas/generation.ts)):
+
+| Constraint | Effect |
+|---|---|
+| Components | Only components the registry selected. An invented or renamed component fails validation |
+| Gaps | Placeholders `{ gap, purpose }` may reference only non-blocking gaps |
+| Net-new gaps | **Every** `mark-net-new` gap must appear as a placeholder in **every** direction, so a missing capability is never drawn as if it existed |
+| Patterns, rules | Only matched patterns and rules that fired may be cited |
+| Decisions | `supportingDecisions` may cite only slots policy decided |
+| Distinctness | Unique ids and a different strategy per direction |
+| Empty lists | With a vocabulary, an empty list means *nothing* is allowed, not anything |
+
+A failed validation is fed back to the model for one more attempt.
+- **The prompt lists every decision** with its confidence, top reason and **ruled-out options**, so the model can't reintroduce a vetoed choice.
+- **Designer steering:** an optional instruction (e.g. *"make one direction work one-handed on a phone"*) is passed through, within the same rules.
+
+### Refusal when blocked (§21c)
+
+The server **re-runs policy itself** from the session's state, results, overrides and gap settlements; it never trusts an outcome sent by the browser. If a critical gap blocks generation, `/api/ux/layouts` answers `409` with the blocking gaps. The screen says what's missing and which decision could be overridden instead.
+
+### Without an LLM: the deterministic draft
+
+[compose.ts](src/lib/ux/layouts/compose.ts) builds directions from the outcome alone; nothing is canned:
+
+- **Regions** come from what each selected component serves: overview, navigation or progress, search and filters, the primary task (named after it), bulk actions, detail, actions, feedback and confirmation. A component appears in every region it serves, described by what it does there. For example, Button applies filters in one region and confirms a rejection in another.
+- **Gap placeholders** go where their capability would have been, labelled e.g. *"Net-new component required: Row selection (missing select-all, …)"*.
+- **The first work component** carries the data states policy requires (loading, empty, error…).
+- **Strategies** apply only when the outcome has the material for them:
+
+| Strategy | Applies when | Leads with |
+|---|---|---|
+| Task first | there is a primary-task region | the primary task |
+| Exception first | search or filters plus a data presentation | "Needs attention": filters preset to problem items |
+| Overview first | a metric or chart component | the summary |
+| Focus first | a detail view | the open item, with a compact list beside it |
+| Guidance first | progress or feedback components | progress and guidance, then the step |
+| Compact | only if fewer than two others apply | the primary task, in one column |
+
+Results for the two golden scenarios:
+- **Expense dashboard:** *Task first / Exception first / Focus first*.
+- **Mobile sign-up:** *Task first / Guidance first*, with phone notes and no desktop notes.
+
+The draft passes through the same per-request schema as an LLM's output and is labelled *"Drafted without an LLM"*.
+
+### Checks computed in code
+
+[checks.ts](src/lib/ux/layouts/checks.ts) computes, for each direction, what no generator is trusted to report:
+
+| Check | Meaning |
+|---|---|
+| `confidence` + band | Mean confidence of the decisions the direction builds on (all decisions if it cites none) |
+| `uncoveredDecisions` | Decided slots whose required capabilities the direction doesn't show |
+| `unusedComponents` | Selected components the direction leaves out |
+| `gapPlaceholders` | Gaps it shows |
+
+Full UX evaluation scores arrive in Milestone 8.
+
+### On screen
+
+Below the patterns, components and gaps panels:
+- **Each direction is a card** with a top-to-bottom region wireframe. Component chips show name, purpose and states; gap placeholders are dashed amber chips.
+- **Why this direction:** rationale, advantages, trade-offs, supporting decisions, rule codes, and phone and desktop notes.
+- **Check notes:** "Doesn't show…" and "Leaves out…", where they apply.
+- **Header line:** the source (LLM model or draft), time and design-system version. It warns when **the decisions have changed since generation** (`layoutsStale`).
+- **Run history:** the last 5 runs are kept in the session, with a picker for earlier ones. Editing the state clears them.
+- **When blocked**, the form is replaced by an explanation of what to resolve.
 
 ---
 
@@ -711,7 +808,7 @@ Everything in [knowledge/](knowledge/) is validated at module load by [src/lib/k
 
 | File | Contents |
 |---|---|
-| `manifest.json` | Versions: question set 1.1.0, rules 0.2.0, policy 1.2.0, patterns 0.2.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.0.0. The evaluator stays at 0.0.0 until written; rules and patterns become 1.0.0 once a designer has reviewed them |
+| `manifest.json` | Versions: question set 1.1.0, rules 0.2.0, policy 1.2.0, patterns 0.2.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.1.0 (adds the layout prompt). The evaluator stays at 0.0.0 until written; rules and patterns become 1.0.0 once a designer has reviewed them |
 | `policy.json` | Confidence thresholds (0.85 / 0.65), noul threshold (0.7), quota (2/IP/day), gap behaviors, capability-mapping confidences and question cap, and **ranking**: tie tolerance 0.25, prior weight 1, priority weights (3 / 2 / 1 / 0.5), design-system penalties, max 3 alternatives |
 | `ux-rules/*.json` | **50 UX rules** in 11 files: accessibility, tables, filtering, search, layout, error-prevention, feedback, navigation, selection, forms, responsive |
 | `patterns.json` | **14 UX patterns**, defined by capabilities |
@@ -878,6 +975,39 @@ The full pipeline: decision model (unless results are supplied), then UX policy,
 
 Designers re-run this endpoint with `overrides` and the earlier `results` to see the effect of a change without another Jev request.
 
+### `POST /api/ux/layouts`
+
+Layout Brainstorm (PRD §23). It never calls the decision model:
+1. The server re-runs policy from the analysis inputs.
+2. While a critical gap blocks generation, it refuses with `409`.
+3. Otherwise it generates with the visitor's LLM, or drafts deterministically when there's no key.
+
+```jsonc
+// request
+{
+  "state": { /* UXState */ },
+  "results": [ /* required: the analysis's decision-model results */ ],
+  "overrides": [], "gapSettlements": [], "designSystem": { /* optional */ },
+  "instruction": "Make one direction mobile-first",            // optional, ≤ 500 chars, LLM only
+  "clientConfig": { "provider": "anthropic", "apiKey": "…" }   // optional
+}
+
+// response: a LayoutBrainstorm
+{
+  "id": "…", "generatedAt": "2026-10-06T14:19:00.771Z",
+  "source": "llm" | "draft", "model": "anthropic:claude-sonnet-5" | "draft",
+  "notices": [], "basedOn": [ { "decision": "dataPresentation", "choice": "data-table" } ],
+  "designSystem": { "id": "default", "version": "1.0.0" }, "prompts": "1.1.0",
+  "output": { "variants": [ { "id": "task-first", "title": "Task first", "regions": [ … ], … } ], "assumptions": [ … ] },
+  "checks": [ { "variantId": "task-first", "confidence": 0.84, "band": "uncertain",
+                "uncoveredDecisions": [], "unusedComponents": [], "gapPlaceholders": [] } ]
+}
+
+// 409 when blocked
+{ "error": "Generation is blocked by a critical design-system gap: destructive-confirmation. …",
+  "blockingGaps": [ { "id": "gap.destructive-confirmation", "capability": "destructive-confirmation" } ] }
+```
+
 ### `POST /api/decision-model/evaluate`
 
 Answers atomic questions against a UX state. It returns raw, typed results only; policy is applied elsewhere.
@@ -978,7 +1108,7 @@ Resolves capability requirements against a design system (the default if omitted
 | `/` | ✅ | Home: positioning, the six-step pipeline (Understand → Decide → Constrain → Generate → Validate → Direct), entry cards |
 | `/settings` | ✅ | LLM provider key and model override; **Decision model (Jev)** section with your own Cloudflare account and today's remaining shared quota |
 | Header | ✅ | V2 badge, primary nav, **Open V1** link, provider status pill (Live / Demo data) |
-| `/analyze` | ✅ | **UX Analyze**: brief, state review, decision cards, Decision Inspector, overrides, patterns / components / gaps, questions table, session picker and trace export (see [UX Analyze](#ux-analyze)) |
+| `/analyze` | ✅ | **UX Analyze**: brief, state review, decision cards, Decision Inspector, overrides, patterns / components / gaps, **layout directions**, questions table, session picker and trace export (see [UX Analyze](#ux-analyze) and [Layout Brainstorm](#layout-brainstorm)) |
 | `/evaluate`, `/copy`, `/feedback`, `/knowledge` | Milestones 8–9 | Linked from the header and home page; not built yet |
 | `/design-system` | Milestone 9 | Design System Review (import, report, capability matrix, gaps); not yet linked |
 
@@ -989,7 +1119,7 @@ Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V
 ## Testing
 
 ```bash
-npm test     # 12 suites, 204 tests
+npm test     # 13 suites, 216 tests
 ```
 
 | Suite | Covers |
@@ -1004,6 +1134,7 @@ npm test     # 12 suites, 204 tests
 | `tests/ux/policy.test.ts` | The expense-dashboard **golden test** (5–10 decisions, expected choices, Inspector-ready explanations, the veto, the review flag, patterns, components, no gaps, critical requirement priority, determinism); overrides (record, rules kept, requirements recomputed, warnings); the §21f example through the full pipeline; and the §13 guarantees: visual rules can't outvote accessibility, the design-system tier breaks ties but not clear preferences, priors decide alone when no rule applies |
 | `tests/ux/subscription.test.ts` | **Second golden scenario**: mobile-first subscription sign-up and checkout. Steps with progress (multi-step, stepper, wizard), split view vetoed on the phone, no detail view without a list, the wizard vs short-auth conflict surfaced as uncertain, persistent inline errors, checkout-family patterns, no gaps |
 | `tests/ux/analyze.test.ts` | State extraction (the describe-don't-judge prompt, labelled demo states, the designer's brief preserved); `analyzeState` reusing results, rejecting unknown questions, applying gap settlements; the session trace (event log, schema-valid round trip, acceptances tied to choices, state edits clearing derived data) |
+| `tests/ux/layouts.test.ts` | Layout Brainstorm: the draft composer's directions for both golden scenarios (distinct leads, schema-valid, every component used, every decision shown, data states carried); refusal while Acme is blocked; after the undo override, every net-new gap placed in every direction and only Acme's components used; the LLM path held to the per-request schema (invented components and hidden gaps rejected, vetoes and steering in the prompt); direction checks; runs in the session trace, staleness, and loading older sessions |
 | `tests/ux/knowledge-doc.test.ts` | DSL rendering of rules (including vetoes as RULE OUT) and that `docs/KNOWLEDGE.md` matches `knowledge/` |
 | `tests/design-system/pipeline.test.ts` | Normalizer (names, states, variants, tokens, findings), capability mapping (declared, inferred, decision-model confirmation and rejection, designer review), and the full §21f worked example including override and accepted risk |
 
@@ -1015,7 +1146,15 @@ The UX Analyze screen was also checked end to end in Chrome against `next dev`, 
 - reload, then the session is restored from the picker and Accept works;
 - no console errors.
 
-That run caught two bugs the unit tests had missed, now fixed: a Checkout pattern falsely matching the expense dashboard (a mock keyword), and rules repeated once per effect in the Inspector.
+Milestone 7 was checked the same way, plus screenshots:
+- brief → decisions → Brainstorm → three directions;
+- the run is stored in the trace;
+- an override shows the "decisions have changed" warning;
+- at the narrowest window width, no horizontal scroll.
+
+The run surfaced a hydration warning on `<html>`, caused by a browser extension editing its class. It's now suppressed for that element only.
+
+The Milestone 6 run caught two bugs the unit tests had missed, now fixed: a Checkout pattern falsely matching the expense dashboard (a mock keyword), and rules repeated once per effect in the Inspector.
 
 ---
 
@@ -1064,11 +1203,11 @@ v2/
 │   │   └── api/
 │   │       ├── decision-model/{evaluate,quota}/route.ts
 │   │       ├── design-system/{capabilities,default,import,map,gaps}/route.ts
-│   │       └── ux/{state,decide,analyze}/route.ts
+│   │       └── ux/{state,decide,analyze,layouts}/route.ts
 │   ├── components/
 │   │   ├── AppHeader.tsx
 │   │   ├── CloudflareSettings.tsx
-│   │   └── analyze/                BriefForm, StateReview, DecisionCard, DecisionInspector, SolutionPanel, QuestionsTable
+│   │   └── analyze/                BriefForm, StateReview, DecisionCard, DecisionInspector, SolutionPanel, LayoutDirections, QuestionsTable
 │   └── lib/
 │       ├── ai/                     LLM dispatch (from V1) + validation retry
 │       ├── api.ts                  Shared request parsing and decision context
@@ -1090,6 +1229,7 @@ v2/
 │       │   ├── pipeline.ts              runPolicy(): the deterministic pipeline (+ gap settlements)
 │       │   ├── analyze.ts               analyzeState(): decision model + policy, shared by the routes
 │       │   ├── state/extract.ts         Brief → UX state (LLM prompt, demo fallback)
+│       │   ├── layouts/                 Layout Brainstorm: generate (prompt, refusal), compose (draft), checks
 │       │   └── fixtures/                Golden states: expense dashboard, subscription sign-up
 │       └── nav.ts                  Primary navigation
 ├── scripts/knowledge-doc.ts        npm run knowledge:doc
@@ -1108,7 +1248,8 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
   - **validation-error retry:** a schema failure is fed back to the model for one more attempt;
   - an **optional mock**, so callers can choose to fail instead of returning canned data;
   - `resolveLlmConfig()`;
-  - the model id in results.
+  - the model id in results;
+  - a per-call output token cap (`maxTokens`; layouts use 8,192).
 - Browser storage keys use a `design-companion-v2:` prefix, and the apps run on different origins, so their settings never collide.
 
 ---
@@ -1144,8 +1285,11 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 - **The 50-rule ceiling** (the PRD's 30–50 target) is enforced by a test. Content and copy rules arrive with UI Copy in Milestone 9.
 - **Mock judgments shape the golden test.** With real Jev answers, confidences and some close calls (layout, status feedback, navigation) may differ.
 - **Only the JSON import exists.** Token files, Storybook, repository and Figma import (§37 phases 2–5) are later work.
-- **Only UX Analyze is built so far** among the designer-facing screens (plus Home and Settings).
-- **The screen was verified by DOM scripting, not by eye.** Chrome screenshots weren't available, so the layout (especially at phone widths) still needs a visual review.
+- **Only UX Analyze (with Layout Brainstorm) is built so far** among the designer-facing screens (plus Home and Settings).
+- **The phone-width check stopped at 568px**, Chrome's minimum window width. Narrower phones haven't been checked by eye.
+- **Draft directions are generic.** Without an LLM, region wording comes from templates and all directions share the same decision basis, so their confidences are equal. With an LLM, directions are problem-specific.
+- **Directions are not yet scored.** Evaluation scores (PRD §23) arrive with Milestone 8; today each direction shows decision confidence and coverage checks.
+- **Steering starts fresh.** Layout runs aren't sent back to the LLM as prior output, so "generate again" with steering doesn't refine the previous run.
 - **The state editor** offers in-place edits for hard constraints and assumptions only; everything else is edited as JSON.
 - **PRD §33 types the provider's state as `UXState`;** the implementation accepts any object. The architecture doc will reflect this.
 
@@ -1153,14 +1297,11 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 
 ## Roadmap
 
-**Milestone 7, Layout Brainstorm (next):**
-- Constrained generation of 2–3 layout directions (Task first / Exception first / Overview first) from the policy outcome.
-- A per-request schema that allows only registry components and known, non-blocking gap ids, with gap regions shown as placeholders.
-- Each direction shows its rationale, supporting decisions, rules, components, advantages and trade-offs.
-- Generation is refused while the outcome is blocked.
-- Directions are added to the session trace.
+**Milestone 8, UX Evaluation and Compare (next):**
+- Atomic evaluation questions plus deterministic checks, aggregated in code into the 12 `UXEvaluation` categories.
+- Scores for each layout direction, and a Compare view across directions.
+- `/evaluate` for a described UI or spec.
 
 **Then:**
-- Milestone 8: evaluation and Compare Solutions.
 - Milestone 9: UI Copy, Feedback Summary and Design System Review.
 - Milestone 10: the three-system benchmark, architecture docs and deployment.

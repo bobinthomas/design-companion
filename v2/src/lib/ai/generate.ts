@@ -25,12 +25,13 @@ async function callAnthropic(
   apiKey: string,
   model: string,
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  maxTokens: number
 ): Promise<string> {
   const client = new Anthropic({ apiKey });
   const response = await client.messages.create({
     model,
-    max_tokens: 4096,
+    max_tokens: maxTokens,
     system: systemPrompt,
     messages: [{ role: "user", content: userPrompt }],
   });
@@ -49,7 +50,8 @@ async function callOpenAICompatible(
   apiKey: string,
   model: string,
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  maxTokens: number
 ): Promise<string> {
   const res = await fetch(OPENAI_COMPATIBLE_BASE_URLS[provider], {
     method: "POST",
@@ -60,7 +62,7 @@ async function callOpenAICompatible(
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+      max_tokens: maxTokens,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -91,14 +93,15 @@ async function callOpenAICompatible(
 async function callProvider(
   config: ProviderClientConfig,
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  maxTokens: number
 ): Promise<string> {
   const model = config.model?.trim() || PROVIDER_DEFAULT_MODELS[config.provider];
 
   if (config.provider === "anthropic") {
-    return callAnthropic(config.apiKey, model, systemPrompt, userPrompt);
+    return callAnthropic(config.apiKey, model, systemPrompt, userPrompt, maxTokens);
   }
-  return callOpenAICompatible(config.provider, config.apiKey, model, systemPrompt, userPrompt);
+  return callOpenAICompatible(config.provider, config.apiKey, model, systemPrompt, userPrompt, maxTokens);
 }
 
 interface GenerateStructuredOptions<T> {
@@ -110,6 +113,8 @@ interface GenerateStructuredOptions<T> {
   clientConfig?: ProviderClientConfig;
   /** Total model calls allowed when output fails JSON/schema validation. */
   maxAttempts?: number;
+  /** Output token cap per call. */
+  maxTokens?: number;
 }
 
 interface GenerateStructuredResult<T> {
@@ -151,6 +156,7 @@ export async function generateStructured<T>({
   mock,
   clientConfig,
   maxAttempts = 2,
+  maxTokens = 4096,
 }: GenerateStructuredOptions<T>): Promise<GenerateStructuredResult<T>> {
   const config = resolveLlmConfig(clientConfig);
 
@@ -166,7 +172,7 @@ export async function generateStructured<T>({
   let prompt = userPrompt;
   let lastError = "";
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const text = await callProvider(config, systemPrompt, prompt);
+    const text = await callProvider(config, systemPrompt, prompt, maxTokens);
     const outcome = parseAndValidate(text, schema);
     if (outcome.ok) {
       return { data: outcome.data, source: config.provider, model };

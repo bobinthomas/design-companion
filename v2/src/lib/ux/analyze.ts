@@ -65,6 +65,13 @@ export class UnknownResultsError extends Error {
   }
 }
 
+/** Throws when results cite questions the current question set doesn't have. */
+export function assertKnownResults(results: readonly DecisionResult[]): void {
+  const known = new Set(ANALYSIS_QUESTIONS.map((q) => q.id));
+  const unknown = results.filter((r) => !known.has(r.questionId)).map((r) => r.questionId);
+  if (unknown.length > 0) throw new UnknownResultsError(unknown);
+}
+
 /**
  * State → (decision model, unless results are supplied) → UX policy →
  * patterns → requirements → design-system resolution → components + gaps.
@@ -79,9 +86,7 @@ export async function analyzeState(input: {
 }): Promise<AnalysisResponse> {
   let run: DecisionModelInfo & { results: DecisionResult[] };
   if (input.results) {
-    const known = new Set(ANALYSIS_QUESTIONS.map((q) => q.id));
-    const unknown = input.results.filter((r) => !known.has(r.questionId)).map((r) => r.questionId);
-    if (unknown.length > 0) throw new UnknownResultsError(unknown);
+    assertKnownResults(input.results);
     run = {
       results: input.results,
       provider: input.results[0]?.provider ?? "mock",

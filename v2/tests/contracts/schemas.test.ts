@@ -282,10 +282,11 @@ describe("Design system contracts", () => {
 });
 
 describe("Generation", () => {
+  let n = 0;
   const variant = (components: unknown[]) => ({
-    id: "task-first",
-    title: "Task first",
-    strategy: "Task first",
+    id: `direction-${++n}`,
+    title: `Direction ${n}`,
+    strategy: `Strategy ${n}`,
     summary: "Pending approvals up front",
     rationale: "Primary task is daily review",
     pattern: "data-table",
@@ -341,5 +342,28 @@ describe("Generation", () => {
       ],
     });
     expect(result.success).toBe(false);
+  });
+
+  it("requires net-new gap placeholders in every direction, decided slots only, and distinct directions", () => {
+    const strict = buildGenerationSchema({
+      patternIds: ["data-table"],
+      componentIds: ["table"],
+      ruleIds: [],
+      gapIds: ["gap.row-selection"],
+      decisionSlots: ["dataPresentation"],
+      requiredGapIds: ["gap.row-selection"],
+    });
+    const withGap = variant([{ component: "table", purpose: "List" }, { gap: "gap.row-selection", purpose: "Bulk select" }]);
+    expect(strict.safeParse({ variants: [withGap, variant([{ gap: "gap.row-selection", purpose: "Bulk" }])] }).success).toBe(true);
+
+    const missing = strict.safeParse({ variants: [withGap, variant([{ component: "table", purpose: "List" }])] });
+    expect(missing.success).toBe(false);
+    expect(missing.error?.message).toMatch(/must show gap gap.row-selection/);
+
+    const undecided = strict.safeParse({ variants: [{ ...withGap, supportingDecisions: ["layout"] }, { ...withGap, id: "other", strategy: "Other" }] });
+    expect(undecided.success).toBe(false);
+
+    const twins = strict.safeParse({ variants: [withGap, { ...withGap, id: "twin" }] });
+    expect(twins.error?.message).toMatch(/different strategy/);
   });
 });

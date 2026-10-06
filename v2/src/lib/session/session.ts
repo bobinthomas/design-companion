@@ -3,9 +3,11 @@ import {
   decisionResultSchema,
   decisionTypeSchema,
   gapResolutionKindSchema,
+  layoutBrainstormSchema,
   policyOutcomeSchema,
   uxStateSchema,
   type DecisionType,
+  type LayoutBrainstorm,
 } from "@/lib/schemas";
 
 /**
@@ -16,6 +18,7 @@ import {
  */
 
 export const SESSION_VERSION = 1;
+const MAX_LAYOUT_RUNS = 5;
 
 const timestamp = z.iso.datetime();
 
@@ -31,6 +34,7 @@ export const sessionEventSchema = z.object({
     "override-removed",
     "gap-settled",
     "gap-reopened",
+    "layouts-generated",
   ]),
   detail: z.string(),
 });
@@ -68,6 +72,8 @@ export const analysisSessionSchema = z.object({
   /** Accepted decisions, tied to the choice that was accepted. */
   accepted: z.array(z.object({ decision: decisionTypeSchema, choice: z.string(), at: timestamp })),
   gapSettlements: z.array(sessionGapSettlementSchema),
+  /** Layout Brainstorm runs, newest first (at most MAX_LAYOUT_RUNS). */
+  layouts: z.array(layoutBrainstormSchema).default([]),
   events: z.array(sessionEventSchema),
 });
 
@@ -97,6 +103,7 @@ export function createSession(brief: string, id: string = crypto.randomUUID(), a
     overrides: [],
     accepted: [],
     gapSettlements: [],
+    layouts: [],
     events: [{ at, type: "created", detail: brief }],
   };
 }
@@ -117,6 +124,7 @@ export function withState(
     overrides: [],
     accepted: [],
     gapSettlements: [],
+    layouts: [],
   };
   return source.kind === "edited"
     ? touch(next, "state-edited", "Designer edited the UX state; earlier decisions were cleared.")
@@ -179,6 +187,21 @@ export function reopenGap(session: AnalysisSession, gapId: string): AnalysisSess
     "gap-reopened",
     gapId
   );
+}
+
+export function withLayouts(session: AnalysisSession, run: LayoutBrainstorm): AnalysisSession {
+  return touch(
+    { ...session, layouts: [run, ...session.layouts.filter((l) => l.id !== run.id)].slice(0, MAX_LAYOUT_RUNS) },
+    "layouts-generated",
+    `${run.output.variants.length} directions (${run.output.variants.map((v) => v.strategy).join(", ")}) via ${run.model}${run.instruction ? `; steering: ${run.instruction}` : ""}`
+  );
+}
+
+/** True when the decisions changed since the directions were generated. */
+export function layoutsStale(session: AnalysisSession, run: LayoutBrainstorm): boolean {
+  const current = session.outcome?.decisions ?? [];
+  if (current.length !== run.basedOn.length) return true;
+  return run.basedOn.some((b) => !current.some((d) => d.decision === b.decision && d.result.choice === b.choice));
 }
 
 /** A short label for session lists. */

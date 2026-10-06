@@ -5,21 +5,24 @@ import Link from "next/link";
 import { BriefForm } from "@/components/analyze/BriefForm";
 import { DecisionCard } from "@/components/analyze/DecisionCard";
 import { DecisionInspector } from "@/components/analyze/DecisionInspector";
+import { LayoutDirections } from "@/components/analyze/LayoutDirections";
 import { QuestionsTable } from "@/components/analyze/QuestionsTable";
 import { SolutionPanel } from "@/components/analyze/SolutionPanel";
 import { StateReview } from "@/components/analyze/StateReview";
-import { requestAnalysis, requestState } from "@/lib/client/api";
+import { requestAnalysis, requestLayouts, requestState } from "@/lib/client/api";
 import { PROVIDER_LABELS, card, secondaryButton } from "@/lib/client/format";
 import {
   acceptDecision,
   addOverride,
   createSession,
   isAccepted,
+  layoutsStale,
   removeOverride,
   reopenGap,
   sessionTitle,
   settleGap,
   withAnalysis,
+  withLayouts,
   withState,
   type AnalysisSession,
 } from "@/lib/session/session";
@@ -34,7 +37,7 @@ const QUESTIONS = analysisQuestions as unknown as DecisionQuestion[];
 export default function AnalyzePage() {
   const [sessions, setSessions] = useState<AnalysisSession[]>([]);
   const [session, setSession] = useState<AnalysisSession | null>(null);
-  const [busy, setBusy] = useState<null | "state" | "decide" | "policy">(null);
+  const [busy, setBusy] = useState<null | "state" | "decide" | "policy" | "layouts">(null);
   const [error, setError] = useState<string | null>(null);
   const [inspecting, setInspecting] = useState<DecisionType | null>(null);
 
@@ -50,7 +53,7 @@ export default function AnalyzePage() {
     setSessions(loadSessions());
   }
 
-  async function run<T>(kind: "state" | "decide" | "policy", task: () => Promise<T>): Promise<T | undefined> {
+  async function run<T>(kind: NonNullable<typeof busy>, task: () => Promise<T>): Promise<T | undefined> {
     setBusy(kind);
     setError(null);
     try {
@@ -74,6 +77,12 @@ export default function AnalyzePage() {
   async function analyze(next: AnalysisSession, fresh: boolean) {
     await run(fresh ? "decide" : "policy", async () => {
       commit(withAnalysis(next, await requestAnalysis(next, fresh)));
+    });
+  }
+
+  async function brainstorm(current: AnalysisSession, instruction: string) {
+    await run("layouts", async () => {
+      commit(withLayouts(current, await requestLayouts(current, instruction)));
     });
   }
 
@@ -203,6 +212,15 @@ export default function AnalyzePage() {
             busy={busy !== null}
             onSettleGap={(gapId, kind: GapResolutionKind, reason) => analyze(settleGap(session, { gapId, kind, reason }), false)}
             onReopenGap={(gapId) => analyze(reopenGap(session, gapId), false)}
+          />
+
+          <LayoutDirections
+            key={session.id}
+            outcome={outcome}
+            runs={session.layouts}
+            stale={(r) => layoutsStale(session, r)}
+            busy={busy === "layouts"}
+            onGenerate={(instruction) => brainstorm(session, instruction)}
           />
 
           {session.results && outcome && <QuestionsTable questions={QUESTIONS} results={session.results} />}
