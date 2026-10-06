@@ -11,10 +11,10 @@ function answerKeys(q: DecisionQuestion): string[] {
 }
 
 describe("analysis question set", () => {
-  it("has 10–30 questions with unique ids", () => {
+  it("has 10–40 questions with unique ids", () => {
     const ids = ANALYSIS_QUESTIONS.map((q) => q.id);
     expect(ids.length).toBeGreaterThanOrEqual(10);
-    expect(ids.length).toBeLessThanOrEqual(30);
+    expect(ids.length).toBeLessThanOrEqual(40);
     expect(new Set(ids).size).toBe(ids.length);
   });
 

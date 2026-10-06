@@ -1,0 +1,63 @@
+[
+  {
+    "id": "responsive.mobile.full-page-detail",
+    "code": "SMALL_SCREEN_DETAIL",
+    "category": "responsive",
+    "tier": "technical",
+    "priority": "critical",
+    "when": {
+      "all": [
+        {
+          "fact": "context.device",
+          "op": "eq",
+          "value": "mobile"
+        }
+      ],
+      "any": [
+        {
+          "question": "task.detail-in-context.required",
+          "is": "true"
+        },
+        {
+          "question": "data.volume.high",
+          "is": "true"
+        }
+      ]
+    },
+    "decision": "detailView",
+    "recommend": [
+      "full-page"
+    ],
+    "avoid": [
+      "side-panel"
+    ],
+    "reason": "On a phone there is no room for a side panel beside the list; detail opens full-page with a clear way back."
+  },
+  {
+    "id": "responsive.mobile.filter-panel",
+    "code": "SMALL_SCREEN_FILTERS",
+    "category": "responsive",
+    "tier": "technical",
+    "priority": "medium",
+    "when": {
+      "all": [
+        {
+          "question": "device.mobile.likely",
+          "is": "true"
+        },
+        {
+          "question": "data.filtering.required",
+          "is": "true"
+        }
+      ]
+    },
+    "decision": "filtering",
+    "recommend": [
+      "filter-panel"
+    ],
+    "avoid": [
+      "persistent-filter-bar"
+    ],
+    "reason": "A persistent filter bar takes most of a phone screen; a filter panel opens on demand and shows an active-filter count."
+  }
+]

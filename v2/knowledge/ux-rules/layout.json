@@ -5,10 +5,21 @@
     "category": "layout",
     "tier": "task",
     "priority": "high",
-    "when": { "all": [{ "question": "task.detail-in-context.required", "is": "true" }] },
+    "when": {
+      "all": [
+        {
+          "question": "task.detail-in-context.required",
+          "is": "true"
+        }
+      ]
+    },
     "decision": "detailView",
-    "recommend": ["side-panel"],
-    "avoid": ["full-page"],
+    "recommend": [
+      "side-panel"
+    ],
+    "avoid": [
+      "full-page"
+    ],
     "reason": "Users inspect a record and return to the list repeatedly; a side panel keeps their place, a full page loses it."
   },
   {
@@ -19,12 +30,20 @@
     "priority": "medium",
     "when": {
       "all": [
-        { "question": "task.detail-in-context.required", "is": "true" },
-        { "question": "data.volume.high", "is": "true" }
+        {
+          "question": "task.detail-in-context.required",
+          "is": "true"
+        },
+        {
+          "question": "data.volume.high",
+          "is": "true"
+        }
       ]
     },
     "decision": "layout",
-    "recommend": ["split-view"],
+    "recommend": [
+      "split-view"
+    ],
     "reason": "A long list with frequent detail inspection is a list–detail workflow: list and detail side by side."
   },
   {
@@ -33,9 +52,18 @@
     "category": "layout",
     "tier": "task",
     "priority": "medium",
-    "when": { "all": [{ "question": "task.monitoring.aggregate", "is": "true" }] },
+    "when": {
+      "all": [
+        {
+          "question": "task.monitoring.aggregate",
+          "is": "true"
+        }
+      ]
+    },
     "decision": "layout",
-    "recommend": ["dashboard"],
+    "recommend": [
+      "dashboard"
+    ],
     "reason": "When totals and trends matter, users need an overview before individual records."
   },
   {
@@ -44,10 +72,21 @@
     "category": "layout",
     "tier": "task",
     "priority": "high",
-    "when": { "all": [{ "question": "task.multi-step.required", "is": "true" }] },
+    "when": {
+      "all": [
+        {
+          "question": "task.multi-step.required",
+          "is": "true"
+        }
+      ]
+    },
     "decision": "layout",
-    "recommend": ["multi-step"],
-    "avoid": ["dashboard"],
+    "recommend": [
+      "multi-step"
+    ],
+    "avoid": [
+      "dashboard"
+    ],
     "reason": "A task with ordered steps is easier to complete one step at a time with clear progress."
   },
   {
@@ -55,10 +94,20 @@
     "code": "SMALL_SCREEN_SPLIT_VIEW",
     "category": "responsive",
     "tier": "technical",
-    "priority": "medium",
-    "when": { "all": [{ "question": "device.mobile.likely", "is": "true" }] },
+    "priority": "critical",
+    "when": {
+      "all": [
+        {
+          "fact": "context.device",
+          "op": "eq",
+          "value": "mobile"
+        }
+      ]
+    },
     "decision": "layout",
-    "avoid": ["split-view"],
-    "reason": "Side-by-side list and detail doesn't fit a phone screen; it collapses into two separate views."
+    "avoid": [
+      "split-view"
+    ],
+    "reason": "On a phone, a list and its detail cannot sit side by side; a split view would collapse into an unusable sliver."
   }
 ]

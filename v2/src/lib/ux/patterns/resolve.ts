@@ -37,7 +37,10 @@ export function resolvePatterns(
     const parts: number[] = [];
     if (pattern.recommendedWhen.length > 0) parts.push(matchedQuestions.length / pattern.recommendedWhen.length);
     if (pattern.fitsDecisions.length > 0) parts.push(matchedDecisions.length / pattern.fitsDecisions.length);
-    const score = parts.length > 0 ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
+    // A pattern with evidence conditions needs at least one of them: decision
+    // compatibility alone (a table was chosen) doesn't make it Comparison.
+    const hasEvidence = pattern.recommendedWhen.length === 0 || matchedQuestions.length > 0;
+    const score = hasEvidence && parts.length > 0 ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
     return { pattern, score, matchedQuestions, matchedDecisions };
   });
 

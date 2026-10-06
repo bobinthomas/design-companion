@@ -48,7 +48,7 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 
 ## Status
 
-V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–4 are complete** on the `v2` branch.
+V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–5 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
 
 | # | Milestone | Status |
 |---|---|---|
@@ -56,8 +56,8 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 | 2 | Decision infrastructure: `DecisionProvider`, Jev / LLM / mock adapters, question registry, confidence policy, quota | ✅ Done |
 | 3 | Design System Intelligence: capability vocabulary, normalizer, capability mapping, gap detection, registry APIs | ✅ Done |
 | 4 | UX Policy: rule engine, policy engine, pattern and component resolvers, 43 rules, 8 patterns, expense-dashboard golden test | ✅ Done |
-| 5 | Knowledge base: patterns to 14, forms/content/responsive rules, designer review of all rules | Next |
-| 6 | UX Analyze + Decision Inspector + overrides + audit trail | Planned |
+| 5 | Knowledge base: 50 rules, 14 patterns, 35 questions, readable review document, second golden scenario | ✅ Done (awaiting designer review) |
+| 6 | UX Analyze + Decision Inspector + overrides + audit trail | Next |
 | 7 | Decision-guided Layout Brainstorm | Planned |
 | 8 | UX Evaluation + Compare Solutions | Planned |
 | 9 | UI Copy and Feedback Summary migration; Design System Review screen | Planned |
@@ -66,7 +66,8 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 **What works today:**
 - The full deterministic pipeline, from UX state to decisions, patterns, components and design-system gaps, exposed as JSON APIs (`POST /api/ux/decide`).
 - The Settings screen.
-- 164 passing tests.
+- 195 passing tests.
+- A designer-readable copy of all UX knowledge: [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md).
 
 The designer-facing screens (UX Analyze, Evaluate, Copy, Feedback, Knowledge, Design System Review) start in Milestone 6. Until then their header links lead to 404 pages.
 
@@ -93,6 +94,7 @@ npm run dev        # http://localhost:3002  (V1 runs on 3000)
 | `npm run preview` | Build the Worker bundle and run it locally with Wrangler |
 | `npm run deploy` | Build the Worker bundle and deploy to Cloudflare |
 | `npm run cf-typegen` | Generate Cloudflare binding types |
+| `npm run knowledge:doc` | Regenerate [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) from `knowledge/` |
 
 V2 runs with **no configuration at all**. With nothing set up:
 - The deterministic parts (policy, rules, normalization, gap detection) run for real.
@@ -417,7 +419,7 @@ The ordering is transitive, so the full ranking of alternatives is well-defined.
 - the fraction of its `recommendedWhen` conditions that match;
 - the fraction of its `fitsDecisions` that the policy actually chose.
 
-Patterns scoring 0.5 or more are included. The best fit is `primary`; ties go to more matched decisions, then more matched conditions. The rest are `supporting`.
+A pattern that has evidence conditions must match **at least one** of them: being compatible with a decision (a table was chosen) doesn't make something a Comparison. Patterns scoring 0.5 or more are included. The best fit is `primary`; ties go to more matched decisions, then more matched conditions. The rest are `supporting`.
 
 ### Requirements and component resolver
 
@@ -612,11 +614,11 @@ Everything in [knowledge/](knowledge/) is validated at module load by [src/lib/k
 
 | File | Contents |
 |---|---|
-| `manifest.json` | Versions: question set 1.0.0, rules 0.1.0, policy 1.2.0, patterns 0.1.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.0.0. The evaluator stays at 0.0.0 until written; rules and patterns reach 1.0.0 after the Milestone 5 review |
+| `manifest.json` | Versions: question set 1.1.0, rules 0.2.0, policy 1.2.0, patterns 0.2.0, capabilities 1.0.0, compositions 1.0.0, normalization 1.0.0, prompts 1.0.0. The evaluator stays at 0.0.0 until written; rules and patterns become 1.0.0 once a designer has reviewed them |
 | `policy.json` | Confidence thresholds (0.85 / 0.65), noul threshold (0.7), quota (2/IP/day), gap behaviors, capability-mapping confidences and question cap, and **ranking**: tie tolerance 0.25, prior weight 1, priority weights (3 / 2 / 1 / 0.5), design-system penalties, max 3 alternatives |
-| `ux-rules/*.json` | **43 UX rules** in 9 files: accessibility, tables, filtering, search, layout, error-prevention, feedback, navigation, selection |
-| `patterns.json` | **8 UX patterns**, defined by capabilities |
-| `questions/analysis.json` | **27 analysis questions** (18 noul, 6 choice, 3 score) |
+| `ux-rules/*.json` | **50 UX rules** in 11 files: accessibility, tables, filtering, search, layout, error-prevention, feedback, navigation, selection, forms, responsive |
+| `patterns.json` | **14 UX patterns**, defined by capabilities |
+| `questions/analysis.json` | **35 analysis questions** (26 noul, 6 choice, 3 score) |
 | `capabilities.json` | **50 capabilities** in 6 categories, each with acceptance criteria, required states and accessibility obligations |
 | `compositions.json` | **6 composition recipes** |
 | `decision-capabilities.json` | For every option of every decision slot, the capabilities it needs. Validated to cover exactly the vocabulary |
@@ -627,17 +629,23 @@ Everything in [knowledge/](knowledge/) is validated at module load by [src/lib/k
 
 | File | Rules (code: what it does) |
 |---|---|
-| `accessibility.json` | STATUS_NOT_COLOR_ONLY: status badges with text (SC 1.4.1) · REACHABLE_CONTENT: avoid infinite scroll (SC 2.1.1 / 2.4.1) · ERRORS_PERSISTENT: no toasts for input errors (SC 3.3.1) · TIMING_ADJUSTABLE: no auto-dismissing feedback under time pressure (SC 2.2.1) · DRAG_ALTERNATIVE: menu alternative to dragging (SC 2.5.7) · SAFE_DEFAULT_FOCUS: destructive buttons never the default focus (SC 1.4.1 / 2.4.7) |
+| `accessibility.json` | INPUT_FORMAT_INSTRUCTIONS: format hints and fixable errors (SC 3.3.2 / 3.3.3) · STATUS_NOT_COLOR_ONLY: status badges with text (SC 1.4.1) · REACHABLE_CONTENT: avoid infinite scroll (SC 2.1.1 / 2.4.1) · ERRORS_PERSISTENT: no toasts for input errors (SC 3.3.1) · TIMING_ADJUSTABLE: no auto-dismissing feedback under time pressure (SC 2.2.1) · DRAG_ALTERNATIVE: menu alternative to dragging (SC 2.5.7) · SAFE_DEFAULT_FOCUS: destructive buttons never the default focus (SC 1.4.1 / 2.4.7) |
 | `tables.json` | DATA_VOLUME_HIGH, COMPARISON_REQUIRED, INFO_DENSITY_HIGH: data table · VISUAL_RECORDS: cards · STAGED_RECORDS: kanban · TIME_ORDERED_RECORDS: timeline · PAGINATION_HIGH_VOLUME: paginate · SORTED_LIST_POSITION: avoid infinite scroll · BULK_ACTIONS_REQUIRED: bulk action bar |
 | `filtering.json` | FILTER_REQUIRED: persistent filter bar for frequent use · FILTER_OCCASIONAL: filter panel · FILTER_UNNECESSARY: no filters for small sets |
 | `search.json` | SEARCH_REQUIRED: visible search · GLOBAL_SEARCH_DEEP_APP: global search across many sections |
-| `layout.json` | CONTEXT_PRESERVATION: side panel · LIST_DETAIL_WORKFLOW: split view · AGGREGATE_MONITORING: dashboard · MULTI_STEP_TASK: multi-step · SMALL_SCREEN_SPLIT_VIEW: no split view on phones |
+| `layout.json` | CONTEXT_PRESERVATION: side panel · LIST_DETAIL_WORKFLOW: split view · AGGREGATE_MONITORING: dashboard · MULTI_STEP_TASK: multi-step · SMALL_SCREEN_SPLIT_VIEW: **rules out** split view when `context.device` is mobile (critical) |
 | `error-prevention.json` | DESTRUCTIVE_PROTECTED: confirm or undo, **vetoes `none`** (critical) · IRREVERSIBLE_CONFIRM: confirm, not undo · REVERSIBLE_UNDO: undo, not confirm · HIGH_ERROR_COST: confirm |
 | `feedback.json` | ASYNC_OUTCOME: toast · BULK_RESULT_SUMMARY: toast · INLINE_VALIDATION: inline message · DATA_STATES_REQUIRED: loading / empty / error states plus an empty-state capability |
 | `navigation.json` | SINGLE_SCREEN: none · PEER_SECTIONS: tabs · DEEP_APP_NAVIGATION: sidebar · MOBILE_PRIMARY_NAV: bottom nav · STEP_PROGRESS: stepper |
 | `selection.json` | MULTI_SELECT_INDEPENDENT: checkbox · SINGLE_SELECT_FEW: radio · SINGLE_SELECT_MODERATE: select · SINGLE_SELECT_MANY: combobox · IMMEDIATE_SETTING: toggle |
+| `forms.json` | STEPPED_DATA_ENTRY: wizard · LONG_FORM_SECTIONED: one sectioned page with validation · INLINE_EDIT_SMALL_CHANGES: inline edit · SHORT_AUTH_FORM: single-page sign-in / sign-up |
+| `responsive.json` | SMALL_SCREEN_DETAIL: **rules out** side panels on phones when there's a list to keep (critical) · SMALL_SCREEN_FILTERS: filter panel when mobile use is likely |
 
 Rules cite their sources (WCAG success criteria, NN/g, Nielsen's heuristics) where one applies.
+
+**Hard device constraints.** "Users are on a phone" can be a judgment (`device.mobile.likely`, technical tier, a preference) or a fact (`context.device = mobile`). When it's a fact, layouts that physically can't fit are **ruled out** by critical rules rather than merely discouraged. Otherwise a task-tier rule such as CONTEXT_PRESERVATION would put a side panel on a phone.
+
+**Review copy.** [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) renders every rule in the PRD §30 DSL (`WHEN … RECOMMEND … AVOID / RULE OUT … BECAUSE … SOURCE`), plus every pattern and question, with a reviewer's checklist. It's generated by `npm run knowledge:doc` and a test fails if it's stale. [src/lib/ux/rules/dsl.ts](src/lib/ux/rules/dsl.ts) does the rendering.
 
 ### UX patterns
 
@@ -651,6 +659,12 @@ Rules cite their sources (WCAG success criteria, NN/g, Nielsen's heuristics) whe
 | Form | text-input, form-validation | formStructure = single-page-form / inline-edit |
 | Wizard | step-indicator, form-validation | layout = multi-step, formStructure = wizard, navigation = stepper |
 | Empty State | empty-state-display | — |
+| Checkout | text-input, form-validation, step-indicator, primary-action | layout = multi-step / single-page, formStructure = wizard / single-page-form |
+| Onboarding | step-indicator, primary-action | layout = multi-step, navigation = stepper |
+| Authentication | text-input, form-validation, primary-action | formStructure = single-page-form |
+| Settings | on-off-toggle, inline-message | selection = toggle / radio / select, navigation = tabs / sidebar, formStructure = inline-edit |
+| Comparison | (none; table or cards optional) | dataPresentation = data-table / card-grid |
+| CRUD | primary-action, destructive-action, text-input | formStructure = single-page-form / inline-edit, actionConfirmation = confirm-dialog / undo-toast |
 
 Each pattern also lists optional capabilities, required states, the conditions that recommend it, the patterns it composes with, and anti-patterns.
 
@@ -662,6 +676,7 @@ Each pattern also lists optional capabilities, required states, the conditions t
 | Task | performed frequently? · bulk actions required? · details needed without losing place? · multi-step? · data-entry heavy? · long form? · aggregate metrics monitored? · exceptions important? · time pressure (score) |
 | Actions & risk | destructive actions present? · destructive actions easily undone? · cost of error (score) |
 | Interaction & context | number of sections (choice) · selection mode (choice) · option count (choice) · mobile use likely? · outcomes asynchronous? |
+| Flows & scope | payment involved? · sign-in / sign-up? · first-use guidance needed? · settings? · comparing alternatives? · full create / edit / delete? · frequent single-field edits? · formatted input? |
 | Decision priors | data presentation (choice → `dataPresentation`) · overall layout (choice → `layout`) |
 
 Choice questions with a `decision` link use that slot's option ids, so Jev's probabilities become the starting point for policy (Milestone 4).
@@ -750,7 +765,7 @@ Answers atomic questions against a UX state. It returns raw, typed results only;
 
 ```jsonc
 // request
-{ "state": { /* UXState */ }, "questionIds": ["data.volume.high"] }  // questionIds optional (default: all 27)
+{ "state": { /* UXState */ }, "questionIds": ["data.volume.high"] }  // questionIds optional (default: all 35)
 
 // response
 {
@@ -854,7 +869,7 @@ Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V
 ## Testing
 
 ```bash
-npm test     # 9 suites, 164 tests
+npm test     # 11 suites, 195 tests
 ```
 
 | Suite | Covers |
@@ -867,6 +882,8 @@ npm test     # 9 suites, 164 tests
 | `tests/ux/knowledge.test.ts` | Rule and pattern lint: 30–50 rules, unique ids and codes; every condition references a real question with the right type, a real option and a reachable score; fact values are in the vocabulary; capabilities exist; accessibility rules are in the accessibility tier and cite WCAG |
 | `tests/ux/rules.test.ts` | Condition evaluation (noul thresholds and `min`, choices with minimum probability, scores, ordinal facts, missing results never matching) and `all` / `any` / `none` evidence |
 | `tests/ux/policy.test.ts` | The expense-dashboard **golden test** (5–10 decisions, expected choices, Inspector-ready explanations, the veto, the review flag, patterns, components, no gaps, critical requirement priority, determinism); overrides (record, rules kept, requirements recomputed, warnings); the §21f example through the full pipeline; and the §13 guarantees: visual rules can't outvote accessibility, the design-system tier breaks ties but not clear preferences, priors decide alone when no rule applies |
+| `tests/ux/subscription.test.ts` | **Second golden scenario**: mobile-first subscription sign-up and checkout. Steps with progress (multi-step, stepper, wizard), split view vetoed on the phone, no detail view without a list, the wizard vs short-auth conflict surfaced as uncertain, persistent inline errors, checkout-family patterns, no gaps |
+| `tests/ux/knowledge-doc.test.ts` | DSL rendering of rules (including vetoes as RULE OUT) and that `docs/KNOWLEDGE.md` matches `knowledge/` |
 | `tests/design-system/pipeline.test.ts` | Normalizer (names, states, variants, tokens, findings), capability mapping (declared, inferred, decision-model confirmation and rejection, designer review), and the full §21f worked example including override and accepted risk |
 
 Tests run against the deterministic mock and fake bindings, so they need no network or credentials.
@@ -896,10 +913,11 @@ v2/
 ├── docs/
 │   ├── PRD.md                      Product requirements v2.2
 │   ├── PLAN.md                     Implementation plan, decisions, status
+│   ├── KNOWLEDGE.md                Generated review copy of all rules, patterns, questions
 │   └── archive/                    PRD v2.0 and v2.1
 ├── knowledge/                      Versioned UX knowledge (validated at build)
 │   ├── manifest.json
-│   ├── ux-rules/*.json             43 rules in 9 files
+│   ├── ux-rules/*.json             50 rules in 11 files
 │   ├── patterns.json
 │   ├── policy.json
 │   ├── questions/analysis.json
@@ -930,13 +948,16 @@ v2/
 │       ├── schemas/                All Zod contracts
 │       ├── ux/
 │       │   ├── rules/evaluate.ts        Conditions, when clauses, rule firing
+│       │   ├── rules/dsl.ts             PRD §30 DSL rendering
+│       │   ├── knowledge-doc.ts         Builds docs/KNOWLEDGE.md
 │       │   ├── policy/engine.ts         Decisions: tier scoring, vetoes, priors, overrides, confidence
 │       │   ├── policy/requirements.ts   Capability requirements + required states
 │       │   ├── patterns/resolve.ts      Pattern matching
 │       │   ├── components/resolve.ts    Component selection from resolutions
 │       │   ├── pipeline.ts              runPolicy(): the deterministic pipeline
-│       │   └── fixtures/                Expense-dashboard golden state
+│       │   └── fixtures/                Golden states: expense dashboard, subscription sign-up
 │       └── nav.ts                  Primary navigation
+├── scripts/knowledge-doc.ts        npm run knowledge:doc
 ├── tests/                          Vitest suites + Acme design-system fixture
 ├── wrangler.jsonc                  Worker config: AI + KV bindings
 ├── next.config.ts                  Turbopack root pin + OpenNext dev bindings
@@ -983,7 +1004,9 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 - **Jev's real output may differ in detail.** The Jev adapter follows Cloudflare's documented output format, but hasn't yet been checked against a successful live response. Its parsing is deliberately tolerant (e.g. score levels keyed by label or index).
 - **The quota is a soft limit** because KV is eventually consistent.
 - **Composite resolution is one level deep.** A recipe part can't itself be a composite. Composites are checked against each part's own required states, not extra states a requirement adds.
-- **The rules and patterns are a first draft.** They are UX knowledge and need a designer's review, which is planned for Milestone 5.
+- **The rules and patterns await designer review.** They are UX knowledge, versioned 0.2.0 until reviewed; [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) is the review copy.
+- **Some slots rely on the decision model alone.** For example, no rule speaks to presenting a few plans for comparison, so the subscription scenario's data presentation comes only from the prior. With the mock that's `list`; with Jev it would be a real judgment.
+- **The 50-rule ceiling** (the PRD's 30–50 target) is enforced by a test. Content and copy rules arrive with UI Copy in Milestone 9.
 - **Mock judgments shape the golden test.** With real Jev answers, confidences and some close calls (layout, status feedback, navigation) may differ.
 - **Only the JSON import exists.** Token files, Storybook, repository and Figma import (§37 phases 2–5) are later work.
 - **No designer-facing screens yet** beyond Home and Settings.
@@ -993,13 +1016,13 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 
 ## Roadmap
 
-**Milestone 5, Knowledge (next):**
-- Bring the pattern registry to 14: Checkout, Onboarding, Authentication, Settings, Comparison and CRUD.
-- Add forms, content and responsive rules.
-- Review every rule and pattern with a designer, then version rules and patterns 1.0.0.
+**Milestone 6, UX Analyze (next):**
+- An LLM prompt that extracts the UX state from a brief (describe, don't judge), with ambiguities.
+- The `/analyze` screen: an editable state, the questions and answers, decision cards labelled "Determined by UX rules" vs "AI-generated" (§47), and the Decision Inspector.
+- Accept and override actions, re-run without another Jev request, and gap resolution.
+- A session trace in localStorage, exportable as JSON (§29 / §50).
 
 **Then:**
-- Milestone 6: UX Analyze with the Decision Inspector, overrides and an exportable trace.
 - Milestone 7: constrained Layout Brainstorm (Task first / Exception first / Overview first).
 - Milestone 8: evaluation and Compare Solutions.
 - Milestone 9: UI Copy, Feedback Summary and Design System Review.

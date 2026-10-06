@@ -11,8 +11,10 @@ import accessibilityRulesJson from "@knowledge/ux-rules/accessibility.json";
 import errorPreventionRulesJson from "@knowledge/ux-rules/error-prevention.json";
 import feedbackRulesJson from "@knowledge/ux-rules/feedback.json";
 import filteringRulesJson from "@knowledge/ux-rules/filtering.json";
+import formsRulesJson from "@knowledge/ux-rules/forms.json";
 import layoutRulesJson from "@knowledge/ux-rules/layout.json";
 import navigationRulesJson from "@knowledge/ux-rules/navigation.json";
+import responsiveRulesJson from "@knowledge/ux-rules/responsive.json";
 import searchRulesJson from "@knowledge/ux-rules/search.json";
 import selectionRulesJson from "@knowledge/ux-rules/selection.json";
 import tablesRulesJson from "@knowledge/ux-rules/tables.json";
@@ -174,6 +176,8 @@ export const UX_RULES: readonly UXRule[] = z.array(uxRuleSchema).parse([
   ...feedbackRulesJson,
   ...navigationRulesJson,
   ...selectionRulesJson,
+  ...formsRulesJson,
+  ...responsiveRulesJson,
 ]);
 
 /** The UX pattern registry (§18). */

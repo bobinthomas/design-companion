@@ -1,0 +1,64 @@
+[
+  {
+    "id": "forms.multi-step-entry.wizard",
+    "code": "STEPPED_DATA_ENTRY",
+    "category": "forms",
+    "tier": "task",
+    "priority": "high",
+    "when": {
+      "all": [
+        { "question": "task.multi-step.required", "is": "true" },
+        { "question": "task.data-entry.heavy", "is": "true" }
+      ]
+    },
+    "decision": "formStructure",
+    "recommend": ["wizard"],
+    "avoid": ["single-page-form"],
+    "reason": "Entering information across ordered steps is easier one step at a time, with progress shown and earlier steps revisitable.",
+    "source": "NN/g: Wizards: Definition and Design Recommendations"
+  },
+  {
+    "id": "forms.long-form.single-page",
+    "code": "LONG_FORM_SECTIONED",
+    "category": "forms",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [{ "question": "task.long-form.present", "is": "true" }],
+      "none": [{ "question": "task.multi-step.required", "is": "true" }]
+    },
+    "decision": "formStructure",
+    "recommend": ["single-page-form"],
+    "avoid": ["wizard"],
+    "reason": "A long form without a natural order is faster on one page in labelled sections; splitting it into steps only hides what's left.",
+    "requiresCapabilities": ["form-validation"],
+    "requiresStates": ["error", "validating"]
+  },
+  {
+    "id": "forms.quick-edits.inline",
+    "code": "INLINE_EDIT_SMALL_CHANGES",
+    "category": "forms",
+    "tier": "task",
+    "priority": "medium",
+    "when": {
+      "all": [{ "question": "task.quick-edits.frequent", "is": "true" }],
+      "none": [{ "question": "task.long-form.present", "is": "true" }]
+    },
+    "decision": "formStructure",
+    "recommend": ["inline-edit"],
+    "reason": "Changing one field shouldn't mean opening a whole form; editing in place keeps users in their flow."
+  },
+  {
+    "id": "forms.authentication.single-page",
+    "code": "SHORT_AUTH_FORM",
+    "category": "forms",
+    "tier": "task",
+    "priority": "medium",
+    "when": { "all": [{ "question": "task.authentication.present", "is": "true" }] },
+    "decision": "formStructure",
+    "recommend": ["single-page-form"],
+    "avoid": ["wizard"],
+    "reason": "Sign-in and sign-up are short and familiar; splitting them across steps adds friction at the moment users are least committed.",
+    "source": "NN/g: Login Walls"
+  }
+]

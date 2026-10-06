@@ -10,7 +10,19 @@
       "true": "Users regularly face dozens to thousands of records",
       "false": "Users work with a handful of records at a time"
     },
-    "mock": { "keywords": { "true": ["hundreds", "thousands", "150", "300", "large number", "many records"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "hundreds",
+          "thousands",
+          "150",
+          "300",
+          "large number",
+          "many records"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "data.comparison.required",
@@ -23,7 +35,17 @@
       "true": "Users compare attributes across several records",
       "false": "Users look at one record at a time"
     },
-    "mock": { "keywords": { "true": ["compare", "comparison", "across employees", "side by side"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "compare",
+          "comparison",
+          "across employees",
+          "side by side"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "data.filtering.required",
@@ -36,7 +58,17 @@
       "true": "Users need to narrow records by attributes",
       "false": "Users can work with the full set without narrowing it"
     },
-    "mock": { "keywords": { "true": ["filter", "narrow", "status", "category"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "filter",
+          "narrow",
+          "status",
+          "category"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "data.sorting.required",
@@ -49,7 +81,18 @@
       "true": "Users need to reorder records by attributes",
       "false": "A single fixed order is sufficient"
     },
-    "mock": { "keywords": { "true": ["sort", "amount", "priorit", "oldest", "newest"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "sort",
+          "amount",
+          "priorit",
+          "oldest",
+          "newest"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "data.search.required",
@@ -62,7 +105,17 @@
       "true": "Users look up specific known records",
       "false": "Users only browse or work through records in order"
     },
-    "mock": { "keywords": { "true": ["search", "find a specific", "look up", "lookup"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "search",
+          "find a specific",
+          "look up",
+          "lookup"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "data.density.need",
@@ -76,7 +129,20 @@
       "Medium: three to five attributes",
       "High: six or more attributes compared at a glance"
     ],
-    "mock": { "keywords": { "2": ["amount", "category", "policy flags"], "0": ["title only", "name only"] }, "default": "1" }
+    "mock": {
+      "keywords": {
+        "0": [
+          "title only",
+          "name only"
+        ],
+        "2": [
+          "amount",
+          "category",
+          "policy flags"
+        ]
+      },
+      "default": "1"
+    }
   },
   {
     "id": "data.records.visual",
@@ -89,7 +155,18 @@
       "true": "Records are recognized by images or visual previews",
       "false": "Records are recognized by text and numbers"
     },
-    "mock": { "keywords": { "true": ["photo", "image", "thumbnail", "visual preview", "gallery"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "photo",
+          "image",
+          "thumbnail",
+          "visual preview",
+          "gallery"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "data.structure.kind",
@@ -106,9 +183,22 @@
     },
     "mock": {
       "keywords": {
-        "nested-hierarchy": ["folder", "hierarchy", "nested", "parent"],
-        "ordered-stages": ["pipeline", "stage", "kanban"],
-        "time-ordered-events": ["activity log", "history", "timeline"]
+        "nested-hierarchy": [
+          "folder",
+          "hierarchy",
+          "nested",
+          "parent"
+        ],
+        "ordered-stages": [
+          "pipeline",
+          "stage",
+          "kanban"
+        ],
+        "time-ordered-events": [
+          "activity log",
+          "history",
+          "timeline"
+        ]
       },
       "default": "flat-independent-records"
     }
@@ -124,7 +214,16 @@
       "true": "Performed daily or more often",
       "false": "Performed weekly or less often"
     },
-    "mock": { "keywords": { "true": ["\"daily\"", "every day", "continuous"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "\"daily\"",
+          "every day",
+          "continuous"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.bulk-actions.required",
@@ -137,7 +236,17 @@
       "true": "Users apply one action to many records at once",
       "false": "Users act on one record at a time"
     },
-    "mock": { "keywords": { "true": ["several", "at once", "bulk", "batch"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "several",
+          "at once",
+          "bulk",
+          "batch"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.detail-in-context.required",
@@ -150,7 +259,17 @@
       "true": "Users inspect details and return to the list repeatedly",
       "false": "Users rarely need record details, or work on one record in depth"
     },
-    "mock": { "keywords": { "true": ["inspect", "line items", "receipt", "details"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "inspect",
+          "line items",
+          "receipt",
+          "record details"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.multi-step.required",
@@ -163,7 +282,17 @@
       "true": "The task has several ordered steps",
       "false": "The task is done in one place"
     },
-    "mock": { "keywords": { "true": ["step", "wizard", "onboarding", "checkout"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "step",
+          "wizard",
+          "onboarding",
+          "checkout"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.data-entry.heavy",
@@ -176,7 +305,17 @@
       "true": "Mostly entering or editing information",
       "false": "Mostly reviewing or acting on existing information"
     },
-    "mock": { "keywords": { "true": ["fill in", "enter data", "data entry", "form"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "fill in",
+          "enter data",
+          "data entry",
+          "form"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.long-form.present",
@@ -189,7 +328,16 @@
       "true": "There is a form with more than about seven fields",
       "false": "Forms are short or absent"
     },
-    "mock": { "keywords": { "true": ["long form", "application form", "registration"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "long form",
+          "application form",
+          "registration"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.monitoring.aggregate",
@@ -202,7 +350,19 @@
       "true": "Totals, trends or KPIs matter to the task",
       "false": "Only individual records matter"
     },
-    "mock": { "keywords": { "true": ["metric", "kpi", "trend", "monitor", "overview", "totals"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "metric",
+          "kpi",
+          "trend",
+          "monitor",
+          "overview",
+          "totals"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "task.exceptions.important",
@@ -215,7 +375,18 @@
       "true": "Spotting unusual or problematic records is important",
       "false": "All records are handled the same way"
     },
-    "mock": { "keywords": { "true": ["policy violation", "policy flags", "anomal", "unusual", "exception"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "policy violation",
+          "policy flags",
+          "anomal",
+          "unusual",
+          "exception"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "action.destructive.present",
@@ -228,7 +399,18 @@
       "true": "There are destructive or hard-to-reverse actions",
       "false": "All actions are safe and easily reversed"
     },
-    "mock": { "keywords": { "true": ["reject", "delete", "remove", "cancel", "revoke"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "reject",
+          "delete",
+          "remove",
+          "cancel",
+          "revoke"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "action.destructive.reversible",
@@ -241,7 +423,17 @@
       "true": "Destructive actions can be undone immediately with no side effects",
       "false": "Destructive actions notify others, trigger processes or cannot be undone"
     },
-    "mock": { "keywords": { "true": ["undo", "restore", "reversible", "recycle bin"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "undo",
+          "restore",
+          "reversible",
+          "recycle bin"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "risk.error-cost",
@@ -255,7 +447,23 @@
       "Medium: wasted time or rework for the user or a colleague",
       "High: money, legal, safety or trust consequences"
     ],
-    "mock": { "keywords": { "2": ["payment", "money", "reimburse", "legal", "medical", "compliance"], "0": ["personal notes", "draft"] }, "default": "1" }
+    "mock": {
+      "keywords": {
+        "0": [
+          "personal notes",
+          "draft"
+        ],
+        "2": [
+          "payment",
+          "money",
+          "reimburse",
+          "legal",
+          "medical",
+          "compliance"
+        ]
+      },
+      "default": "1"
+    }
   },
   {
     "id": "task.time-pressure",
@@ -269,7 +477,22 @@
       "Medium: there are deadlines but no moment-to-moment pressure",
       "High: users must act within seconds or minutes"
     ],
-    "mock": { "keywords": { "2": ["urgent", "immediately", "real-time", "emergency"], "1": ["moderate", "deadline", "due"] }, "default": "0" }
+    "mock": {
+      "keywords": {
+        "1": [
+          "moderate",
+          "deadline",
+          "due"
+        ],
+        "2": [
+          "urgent",
+          "immediately",
+          "real-time",
+          "emergency"
+        ]
+      },
+      "default": "0"
+    }
   },
   {
     "id": "app.sections.count",
@@ -285,8 +508,16 @@
     },
     "mock": {
       "keywords": {
-        "few-peer-sections": ["tabs", "sections", "settings page"],
-        "many-deep-sections": ["modules", "admin console", "nested sections"]
+        "few-peer-sections": [
+          "tabs",
+          "sections",
+          "settings page"
+        ],
+        "many-deep-sections": [
+          "modules",
+          "admin console",
+          "nested sections"
+        ]
       },
       "default": "single-focused-screen"
     }
@@ -306,9 +537,21 @@
     },
     "mock": {
       "keywords": {
-        "one-of-several": ["choose one", "pick one", "select a plan"],
-        "several-independent": ["choose several", "multiple options", "tags"],
-        "on-off-setting": ["toggle", "enable", "turn on"]
+        "one-of-several": [
+          "choose one",
+          "pick one",
+          "select a plan"
+        ],
+        "several-independent": [
+          "choose several",
+          "multiple options",
+          "tags"
+        ],
+        "on-off-setting": [
+          "toggle",
+          "enable",
+          "turn on"
+        ]
       },
       "default": "no-option-selection"
     }
@@ -327,8 +570,15 @@
     },
     "mock": {
       "keywords": {
-        "six-to-fifteen-options": ["categories"],
-        "more-than-fifteen-options": ["country", "countries", "employees list", "timezone"]
+        "six-to-fifteen-options": [
+          "categories"
+        ],
+        "more-than-fifteen-options": [
+          "country",
+          "countries",
+          "employees list",
+          "timezone"
+        ]
       },
       "default": "two-to-five-options"
     }
@@ -344,7 +594,17 @@
       "true": "A meaningful share of use happens on phones",
       "false": "Use happens almost entirely on larger screens"
     },
-    "mock": { "keywords": { "true": ["on the go", "field work", "mobile app", "\"mobile\""] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "on the go",
+          "field work",
+          "mobile app",
+          "\"mobile\""
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "feedback.outcome.async",
@@ -357,7 +617,17 @@
       "true": "Outcomes complete in the background or after a delay",
       "false": "Outcomes are immediate"
     },
-    "mock": { "keywords": { "true": ["background", "processing", "queued", "export"] }, "default": "false" }
+    "mock": {
+      "keywords": {
+        "true": [
+          "background",
+          "processing",
+          "queued",
+          "export"
+        ]
+      },
+      "default": "false"
+    }
   },
   {
     "id": "decision.data-presentation",
@@ -377,11 +647,29 @@
     },
     "mock": {
       "keywords": {
-        "data-table": ["compare", "amount", "category", "status"],
-        "card-grid": ["photo", "image", "gallery"],
-        "timeline": ["history", "timeline"],
-        "kanban": ["pipeline", "stage"],
-        "chart": ["trend", "kpi"]
+        "data-table": [
+          "compare",
+          "amount",
+          "category",
+          "status"
+        ],
+        "card-grid": [
+          "photo",
+          "image",
+          "gallery"
+        ],
+        "timeline": [
+          "history",
+          "timeline"
+        ],
+        "kanban": [
+          "pipeline",
+          "stage"
+        ],
+        "chart": [
+          "trend",
+          "kpi"
+        ]
       },
       "default": "list"
     }
@@ -403,12 +691,217 @@
     },
     "mock": {
       "keywords": {
-        "split-view": ["inspect", "line items", "details"],
-        "dashboard": ["dashboard", "overview", "kpi"],
-        "multi-step": ["step", "wizard", "checkout"],
-        "detail-view": ["profile page", "single record"]
+        "split-view": [
+          "inspect",
+          "line items",
+          "details"
+        ],
+        "dashboard": [
+          "dashboard",
+          "overview",
+          "kpi"
+        ],
+        "multi-step": [
+          "step",
+          "wizard",
+          "checkout"
+        ],
+        "detail-view": [
+          "profile page",
+          "single record"
+        ]
       },
       "default": "single-page"
+    }
+  },
+  {
+    "id": "task.payment.present",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Does the task involve paying?",
+    "instructions": "Judge whether users pay, purchase, subscribe or enter payment details as part of this task.",
+    "criteria": {
+      "true": "Users pay or enter payment details",
+      "false": "No payment is involved"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "payment",
+          "checkout",
+          "purchase",
+          "subscribe",
+          "credit card"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.authentication.present",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Does the task involve signing in or signing up?",
+    "instructions": "Judge whether this experience includes signing in, signing up, or recovering an account.",
+    "criteria": {
+      "true": "Users sign in, sign up or recover an account",
+      "false": "No authentication is involved"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "sign in",
+          "sign up",
+          "log in",
+          "login",
+          "password",
+          "register"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.first-use.guided",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do first-time users need guidance before they get value?",
+    "instructions": "Judge whether new users must set something up or learn key concepts before the product becomes useful to them.",
+    "criteria": {
+      "true": "New users need setup or guidance first",
+      "false": "Users get value immediately without setup"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "onboarding",
+          "first-time",
+          "first time",
+          "getting started",
+          "setup wizard"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.configuration.present",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do users configure preferences or settings?",
+    "instructions": "Judge whether a meaningful part of this experience is changing preferences, options or settings.",
+    "criteria": {
+      "true": "Users change preferences or settings",
+      "false": "Settings are not part of this experience"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "settings",
+          "preferences",
+          "configure",
+          "notification options"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.option-comparison.required",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do users choose between alternatives by comparing features?",
+    "instructions": "Judge whether users pick one of a few alternatives, such as plans or products, by comparing their features side by side.",
+    "criteria": {
+      "true": "Users compare a few alternatives feature by feature",
+      "false": "Users do not choose between alternatives this way"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "compare plans",
+          "pricing",
+          "choose a plan",
+          "which plan",
+          "feature comparison"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.record-lifecycle.present",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do users create, edit and delete records?",
+    "instructions": "Judge whether users manage the full lifecycle of records: creating new ones, editing them and deleting them.",
+    "criteria": {
+      "true": "Users create, edit and delete records",
+      "false": "Users only review or act on existing records"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "create new",
+          "add new",
+          "edit and delete",
+          "manage records"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.quick-edits.frequent",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Do users often change one or two fields of existing records?",
+    "instructions": "Judge whether users frequently correct or update a single attribute of a record, such as a status or a name, without editing the whole record.",
+    "criteria": {
+      "true": "Users frequently make small edits to single fields",
+      "false": "Edits are rare or involve many fields at once"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "quick edit",
+          "rename",
+          "update status",
+          "change category"
+        ]
+      },
+      "default": "false"
+    }
+  },
+  {
+    "id": "task.structured-input.required",
+    "purpose": "analysis",
+    "category": "task",
+    "type": "noul",
+    "question": "Must users enter values in specific formats?",
+    "instructions": "Judge whether users must type values that follow a required format, such as dates, phone numbers, amounts or identifiers.",
+    "criteria": {
+      "true": "Users type values in required formats",
+      "false": "Inputs are free text or chosen from options"
+    },
+    "mock": {
+      "keywords": {
+        "true": [
+          "enter a date",
+          "phone number",
+          "postcode",
+          "account number",
+          "required format"
+        ]
+      },
+      "default": "false"
     }
   }
 ]

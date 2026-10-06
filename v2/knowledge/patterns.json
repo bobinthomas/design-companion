@@ -3,107 +3,628 @@
     "id": "data-table",
     "name": "Data Table",
     "purpose": "Review and manipulate large structured datasets",
-    "requiredCapabilities": ["tabular-display", "sorting"],
-    "optionalCapabilities": ["row-selection", "pagination", "bulk-action-bar", "inline-row-actions", "column-customization"],
-    "requiredStates": ["loading", "empty", "error", "populated"],
-    "recommendedWhen": [
-      { "question": "data.volume.high", "is": "true" },
-      { "question": "data.comparison.required", "is": "true" },
-      { "question": "data.sorting.required", "is": "true" }
+    "requiredCapabilities": [
+      "tabular-display",
+      "sorting"
     ],
-    "fitsDecisions": [{ "decision": "dataPresentation", "choices": ["data-table"] }],
-    "composesWith": ["filtering", "search", "detail-page", "empty-state"],
-    "antiPatterns": ["Horizontal scrolling to reach the primary action", "Truncating the column users compare on"]
+    "optionalCapabilities": [
+      "row-selection",
+      "pagination",
+      "bulk-action-bar",
+      "inline-row-actions",
+      "column-customization"
+    ],
+    "requiredStates": [
+      "loading",
+      "empty",
+      "error",
+      "populated"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "data.volume.high",
+        "is": "true"
+      },
+      {
+        "question": "data.comparison.required",
+        "is": "true"
+      },
+      {
+        "question": "data.sorting.required",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "dataPresentation",
+        "choices": [
+          "data-table"
+        ]
+      }
+    ],
+    "composesWith": [
+      "filtering",
+      "search",
+      "detail-page",
+      "empty-state"
+    ],
+    "antiPatterns": [
+      "Horizontal scrolling to reach the primary action",
+      "Truncating the column users compare on"
+    ]
   },
   {
     "id": "filtering",
     "name": "Filtering",
     "purpose": "Narrow a record set by attribute values",
-    "requiredCapabilities": ["filter-controls"],
-    "optionalCapabilities": ["side-drawer", "status-badge"],
-    "requiredStates": ["default", "active", "empty"],
-    "recommendedWhen": [{ "question": "data.filtering.required", "is": "true" }],
-    "fitsDecisions": [{ "decision": "filtering", "choices": ["persistent-filter-bar", "filter-panel", "saved-views"] }],
-    "composesWith": ["data-table", "search", "empty-state"],
-    "antiPatterns": ["Hiding which filters are active", "Resetting filters on navigation"]
+    "requiredCapabilities": [
+      "filter-controls"
+    ],
+    "optionalCapabilities": [
+      "side-drawer",
+      "status-badge"
+    ],
+    "requiredStates": [
+      "default",
+      "active",
+      "empty"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "data.filtering.required",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "filtering",
+        "choices": [
+          "persistent-filter-bar",
+          "filter-panel",
+          "saved-views"
+        ]
+      }
+    ],
+    "composesWith": [
+      "data-table",
+      "search",
+      "empty-state"
+    ],
+    "antiPatterns": [
+      "Hiding which filters are active",
+      "Resetting filters on navigation"
+    ]
   },
   {
     "id": "search",
     "name": "Search",
     "purpose": "Find specific known records by query",
-    "requiredCapabilities": ["search-input"],
-    "optionalCapabilities": ["searchable-select"],
-    "requiredStates": ["default", "loading", "empty"],
-    "recommendedWhen": [{ "question": "data.search.required", "is": "true" }],
-    "fitsDecisions": [{ "decision": "search", "choices": ["visible-search", "global-search"] }],
-    "composesWith": ["data-table", "filtering", "empty-state"],
-    "antiPatterns": ["Search that silently ignores active filters"]
+    "requiredCapabilities": [
+      "search-input"
+    ],
+    "optionalCapabilities": [
+      "searchable-select"
+    ],
+    "requiredStates": [
+      "default",
+      "loading",
+      "empty"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "data.search.required",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "search",
+        "choices": [
+          "visible-search",
+          "global-search"
+        ]
+      }
+    ],
+    "composesWith": [
+      "data-table",
+      "filtering",
+      "empty-state"
+    ],
+    "antiPatterns": [
+      "Search that silently ignores active filters"
+    ]
   },
   {
     "id": "detail-page",
     "name": "Detail Page",
     "purpose": "Inspect one record in depth",
     "requiredCapabilities": [],
-    "optionalCapabilities": ["side-drawer", "breadcrumb-trail", "status-badge"],
-    "requiredStates": ["loading", "error", "populated"],
-    "recommendedWhen": [{ "question": "task.detail-in-context.required", "is": "true" }],
-    "fitsDecisions": [{ "decision": "detailView", "choices": ["side-panel", "full-page", "modal"] }],
-    "composesWith": ["data-table"],
-    "antiPatterns": ["Losing the list position when closing the detail"]
+    "optionalCapabilities": [
+      "side-drawer",
+      "breadcrumb-trail",
+      "status-badge"
+    ],
+    "requiredStates": [
+      "loading",
+      "error",
+      "populated"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.detail-in-context.required",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "detailView",
+        "choices": [
+          "side-panel",
+          "full-page",
+          "modal"
+        ]
+      }
+    ],
+    "composesWith": [
+      "data-table"
+    ],
+    "antiPatterns": [
+      "Losing the list position when closing the detail"
+    ]
   },
   {
     "id": "dashboard",
     "name": "Dashboard",
     "purpose": "Overview of aggregate state with entry points to detail",
-    "requiredCapabilities": ["metric-summary"],
-    "optionalCapabilities": ["data-visualization", "status-badge"],
-    "requiredStates": ["loading", "empty", "error", "populated"],
-    "recommendedWhen": [{ "question": "task.monitoring.aggregate", "is": "true" }],
-    "fitsDecisions": [{ "decision": "layout", "choices": ["dashboard"] }],
-    "composesWith": ["data-table", "empty-state"],
-    "antiPatterns": ["Metrics with no way to act on them"]
+    "requiredCapabilities": [
+      "metric-summary"
+    ],
+    "optionalCapabilities": [
+      "data-visualization",
+      "status-badge"
+    ],
+    "requiredStates": [
+      "loading",
+      "empty",
+      "error",
+      "populated"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.monitoring.aggregate",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "layout",
+        "choices": [
+          "dashboard"
+        ]
+      }
+    ],
+    "composesWith": [
+      "data-table",
+      "empty-state"
+    ],
+    "antiPatterns": [
+      "Metrics with no way to act on them"
+    ]
   },
   {
     "id": "form",
     "name": "Form",
     "purpose": "Enter or edit information with validation",
-    "requiredCapabilities": ["text-input", "form-validation"],
-    "optionalCapabilities": ["single-select-dropdown", "multi-select-checkbox", "date-input"],
-    "requiredStates": ["default", "error", "success"],
-    "recommendedWhen": [{ "question": "task.data-entry.heavy", "is": "true" }],
-    "fitsDecisions": [{ "decision": "formStructure", "choices": ["single-page-form", "inline-edit"] }],
-    "composesWith": ["wizard"],
-    "antiPatterns": ["Clearing entered data on error", "Placeholder text used as the only label"]
+    "requiredCapabilities": [
+      "text-input",
+      "form-validation"
+    ],
+    "optionalCapabilities": [
+      "single-select-dropdown",
+      "multi-select-checkbox",
+      "date-input"
+    ],
+    "requiredStates": [
+      "default",
+      "error",
+      "success"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.data-entry.heavy",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "formStructure",
+        "choices": [
+          "single-page-form",
+          "inline-edit"
+        ]
+      }
+    ],
+    "composesWith": [
+      "wizard"
+    ],
+    "antiPatterns": [
+      "Clearing entered data on error",
+      "Placeholder text used as the only label"
+    ]
   },
   {
     "id": "wizard",
     "name": "Wizard",
     "purpose": "Complete a long or ordered task one step at a time",
-    "requiredCapabilities": ["step-indicator", "form-validation"],
-    "optionalCapabilities": ["text-input"],
-    "requiredStates": ["default", "error", "success"],
-    "recommendedWhen": [{ "question": "task.multi-step.required", "is": "true" }],
-    "fitsDecisions": [
-      { "decision": "layout", "choices": ["multi-step"] },
-      { "decision": "formStructure", "choices": ["wizard"] },
-      { "decision": "navigation", "choices": ["stepper"] }
+    "requiredCapabilities": [
+      "step-indicator",
+      "form-validation"
     ],
-    "composesWith": ["form"],
-    "antiPatterns": ["Steps that can't be revisited", "Unknown total number of steps"]
+    "optionalCapabilities": [
+      "text-input"
+    ],
+    "requiredStates": [
+      "default",
+      "error",
+      "success"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.multi-step.required",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "layout",
+        "choices": [
+          "multi-step"
+        ]
+      },
+      {
+        "decision": "formStructure",
+        "choices": [
+          "wizard"
+        ]
+      },
+      {
+        "decision": "navigation",
+        "choices": [
+          "stepper"
+        ]
+      }
+    ],
+    "composesWith": [
+      "form"
+    ],
+    "antiPatterns": [
+      "Steps that can't be revisited",
+      "Unknown total number of steps"
+    ]
   },
   {
     "id": "empty-state",
     "name": "Empty State",
     "purpose": "Explain an empty view and offer the next step",
-    "requiredCapabilities": ["empty-state-display"],
-    "optionalCapabilities": ["primary-action"],
-    "requiredStates": ["empty"],
+    "requiredCapabilities": [
+      "empty-state-display"
+    ],
+    "optionalCapabilities": [
+      "primary-action"
+    ],
+    "requiredStates": [
+      "empty"
+    ],
     "recommendedWhen": [
-      { "question": "data.filtering.required", "is": "true" },
-      { "question": "data.search.required", "is": "true" }
+      {
+        "question": "data.filtering.required",
+        "is": "true"
+      },
+      {
+        "question": "data.search.required",
+        "is": "true"
+      }
     ],
     "fitsDecisions": [],
-    "composesWith": ["data-table", "filtering", "search"],
-    "antiPatterns": ["A blank area with no explanation"]
+    "composesWith": [
+      "data-table",
+      "filtering",
+      "search"
+    ],
+    "antiPatterns": [
+      "A blank area with no explanation"
+    ]
+  },
+  {
+    "id": "checkout",
+    "name": "Checkout",
+    "purpose": "Review an order and pay with confidence",
+    "requiredCapabilities": [
+      "text-input",
+      "form-validation",
+      "step-indicator",
+      "primary-action"
+    ],
+    "optionalCapabilities": [
+      "single-select-dropdown",
+      "inline-message"
+    ],
+    "requiredStates": [
+      "default",
+      "loading",
+      "error",
+      "success"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.payment.present",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "layout",
+        "choices": [
+          "multi-step",
+          "single-page"
+        ]
+      },
+      {
+        "decision": "formStructure",
+        "choices": [
+          "wizard",
+          "single-page-form"
+        ]
+      }
+    ],
+    "composesWith": [
+      "form",
+      "wizard",
+      "authentication"
+    ],
+    "antiPatterns": [
+      "Forcing account creation before purchase",
+      "Revealing fees or the total only on the last step",
+      "Clearing payment details after a validation error"
+    ]
+  },
+  {
+    "id": "onboarding",
+    "name": "Onboarding",
+    "purpose": "Get new users to their first moment of value",
+    "requiredCapabilities": [
+      "step-indicator",
+      "primary-action"
+    ],
+    "optionalCapabilities": [
+      "empty-state-display",
+      "tooltip",
+      "progress-indicator",
+      "secondary-action"
+    ],
+    "requiredStates": [
+      "default",
+      "success"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.first-use.guided",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "layout",
+        "choices": [
+          "multi-step"
+        ]
+      },
+      {
+        "decision": "navigation",
+        "choices": [
+          "stepper"
+        ]
+      }
+    ],
+    "composesWith": [
+      "wizard",
+      "empty-state",
+      "form"
+    ],
+    "antiPatterns": [
+      "A long product tour before any value",
+      "No way to skip or resume later",
+      "Asking for information that is not needed yet"
+    ]
+  },
+  {
+    "id": "authentication",
+    "name": "Authentication",
+    "purpose": "Sign in, sign up and recover an account",
+    "requiredCapabilities": [
+      "text-input",
+      "form-validation",
+      "primary-action"
+    ],
+    "optionalCapabilities": [
+      "secondary-action",
+      "inline-message"
+    ],
+    "requiredStates": [
+      "default",
+      "loading",
+      "error"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.authentication.present",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "formStructure",
+        "choices": [
+          "single-page-form"
+        ]
+      }
+    ],
+    "composesWith": [
+      "form"
+    ],
+    "antiPatterns": [
+      "Blocking paste into password fields (WCAG 3.3.8)",
+      "Cognitive tests such as puzzles without an alternative (WCAG 3.3.8)",
+      "Error messages that reveal whether an account exists"
+    ]
+  },
+  {
+    "id": "settings",
+    "name": "Settings",
+    "purpose": "Change preferences and options",
+    "requiredCapabilities": [
+      "on-off-toggle",
+      "inline-message"
+    ],
+    "optionalCapabilities": [
+      "tab-navigation",
+      "sidebar-navigation",
+      "single-select-dropdown",
+      "single-choice-radio"
+    ],
+    "requiredStates": [
+      "default",
+      "success",
+      "error"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.configuration.present",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "selection",
+        "choices": [
+          "toggle",
+          "radio",
+          "select"
+        ]
+      },
+      {
+        "decision": "navigation",
+        "choices": [
+          "tabs",
+          "sidebar"
+        ]
+      },
+      {
+        "decision": "formStructure",
+        "choices": [
+          "inline-edit"
+        ]
+      }
+    ],
+    "composesWith": [
+      "form"
+    ],
+    "antiPatterns": [
+      "A Save button for settings that apply instantly",
+      "Mixing instant and saved settings on one screen without saying which is which"
+    ]
+  },
+  {
+    "id": "comparison",
+    "name": "Comparison",
+    "purpose": "Choose between a few alternatives by comparing their features",
+    "requiredCapabilities": [],
+    "optionalCapabilities": [
+      "tabular-display",
+      "card-display",
+      "status-badge",
+      "primary-action"
+    ],
+    "requiredStates": [
+      "default",
+      "populated"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.option-comparison.required",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "dataPresentation",
+        "choices": [
+          "data-table",
+          "card-grid"
+        ]
+      }
+    ],
+    "composesWith": [
+      "checkout"
+    ],
+    "antiPatterns": [
+      "Comparing more than about five alternatives side by side",
+      "Rows where every option has the same value, hiding the real differences"
+    ]
+  },
+  {
+    "id": "crud",
+    "name": "CRUD",
+    "purpose": "Create, read, update and delete records",
+    "requiredCapabilities": [
+      "primary-action",
+      "destructive-action",
+      "text-input"
+    ],
+    "optionalCapabilities": [
+      "inline-row-actions",
+      "destructive-confirmation",
+      "undo-action",
+      "form-validation"
+    ],
+    "requiredStates": [
+      "loading",
+      "empty",
+      "error",
+      "populated",
+      "success"
+    ],
+    "recommendedWhen": [
+      {
+        "question": "task.record-lifecycle.present",
+        "is": "true"
+      }
+    ],
+    "fitsDecisions": [
+      {
+        "decision": "formStructure",
+        "choices": [
+          "single-page-form",
+          "inline-edit"
+        ]
+      },
+      {
+        "decision": "actionConfirmation",
+        "choices": [
+          "confirm-dialog",
+          "undo-toast"
+        ]
+      }
+    ],
+    "composesWith": [
+      "data-table",
+      "form",
+      "detail-page",
+      "empty-state"
+    ],
+    "antiPatterns": [
+      "Delete next to Save with equal emphasis",
+      "Losing unsaved edits when navigating away"
+    ]
   }
 ]
