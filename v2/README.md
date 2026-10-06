@@ -20,6 +20,8 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 
 - **Product spec:** [docs/PRD.md](docs/PRD.md) (v2.2; earlier versions in [docs/archive/](docs/archive/))
 - **Implementation plan and status:** [docs/PLAN.md](docs/PLAN.md)
+- **Architecture:** [ARCHITECTURE](docs/ARCHITECTURE.md) · [UX model](docs/UX-MODEL.md) · [Decision model](docs/DECISION-MODEL.md) · [UX policy](docs/UX-POLICY.md) · [Design system](docs/DESIGN-SYSTEM.md)
+- **Benchmark report:** [docs/BENCHMARK.md](docs/BENCHMARK.md)
 
 ---
 
@@ -40,22 +42,23 @@ V2 is a **separate app** from V1 (the repository root). It lives in `v2/`, has i
 13. [Feedback Summary](#feedback-summary)
 14. [Design System Review](#design-system-review)
 15. [Knowledge browser](#knowledge-browser)
-16. [Design System Intelligence](#design-system-intelligence)
-17. [Knowledge base](#knowledge-base)
-18. [API reference](#api-reference)
-19. [User interface](#user-interface)
-20. [Testing](#testing)
-21. [Deployment](#deployment)
-22. [Project structure](#project-structure)
-23. [Design decisions](#design-decisions)
-24. [Known limitations](#known-limitations)
-25. [Roadmap](#roadmap)
+16. [Benchmark](#benchmark)
+17. [Design System Intelligence](#design-system-intelligence)
+18. [Knowledge base](#knowledge-base)
+19. [API reference](#api-reference)
+20. [User interface](#user-interface)
+21. [Testing](#testing)
+22. [Deployment](#deployment)
+23. [Project structure](#project-structure)
+24. [Design decisions](#design-decisions)
+25. [Known limitations](#known-limitations)
+26. [Roadmap](#roadmap)
 
 ---
 
 ## Status
 
-V2 is being built in ten milestones that follow the PRD's sprint plan. **Milestones 1–9 are complete** on the `v2` branch. Milestone 5's knowledge is awaiting designer review.
+V2 was built in ten milestones that follow the PRD's sprint plan. **All ten are complete** on the `v2` branch, apart from the production deploy (run `npm run deploy` yourself; see [Deployment](#deployment)). Milestone 5's knowledge is awaiting designer review.
 
 | # | Milestone | Status |
 |---|---|---|
@@ -68,7 +71,7 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 | 7 | Decision-guided Layout Brainstorm: constrained directions, gap placeholders, refusal when blocked, deterministic checks | ✅ Done |
 | 8 | UX Evaluation + Compare: 15 atomic questions, deterministic checks, 12 category scores, one batched request, `/evaluate` | ✅ Done |
 | 9 | UI Copy, Feedback Summary, Design System Review and the Knowledge browser, on the shared layers | ✅ Done |
-| 10 | Benchmark (LLM-only vs LLM + design system vs decision-guided), docs, deploy | Next |
+| 10 | Benchmark harness (LLM-only vs LLM + design system vs decision-guided), architecture docs, deploy-ready build | ✅ Done (deploy: owner action) |
 
 **What works today:**
 - **UX Analyze** (`/analyze`): brief → reviewable UX state → decisions you can inspect, accept or override → patterns, components and design-system gaps → **layout directions** built only from your design system → **evaluation and comparison** across 12 UX categories, with an exportable trace.
@@ -79,7 +82,8 @@ V2 is being built in ten milestones that follow the PRD's sprint plan. **Milesto
 - **Knowledge** (`/knowledge`): browse and search every rule, pattern, question, capability and guideline.
 - The full pipeline as JSON APIs (`/api/ux/state`, `/api/ux/decide`, `/api/ux/analyze`, `/api/ux/layouts`, `/api/ux/evaluate`, `/api/ux/copy`, `/api/ux/feedback`).
 - The Settings screen.
-- 247 passing tests.
+- 252 passing tests.
+- `npm run benchmark`: the PRD §40 three-system comparison, written to [docs/BENCHMARK.md](docs/BENCHMARK.md).
 - A designer-readable copy of all UX knowledge: [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md).
 
 Every screen in the header is built.
@@ -108,6 +112,7 @@ npm run dev        # http://localhost:3002  (V1 runs on 3000)
 | `npm run deploy` | Build the Worker bundle and deploy to Cloudflare |
 | `npm run cf-typegen` | Generate Cloudflare binding types |
 | `npm run knowledge:doc` | Regenerate [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) from `knowledge/` |
+| `npm run benchmark` | Run the three-system benchmark; writes [docs/BENCHMARK.md](docs/BENCHMARK.md) and `benchmark/results/*.json` |
 
 V2 runs with **no configuration at all**. With nothing set up:
 - The deterministic parts (policy, rules, normalization, gap detection) run for real.
@@ -917,6 +922,53 @@ The screen for [Design System Intelligence](#design-system-intelligence) (PRD §
 
 ---
 
+## Benchmark
+
+[src/lib/benchmark/](src/lib/benchmark/) · [scripts/benchmark.ts](scripts/benchmark.ts) · report: [docs/BENCHMARK.md](docs/BENCHMARK.md)
+
+PRD §40 asks whether separating UX judgment from generation improves AI-generated interfaces. The harness runs three arms on the same briefs, with the same output shape, so the same metrics and the same evaluator apply to all:
+
+| Arm | Pipeline |
+|---|---|
+| **A — LLM only** | brief → LLM → directions (free component names) |
+| **B — LLM + design system** | brief + the component catalogue → LLM, with registry ids enforced by the schema → directions |
+| **C — Decision-guided** | brief → UX state → decision model → policy → design system → LLM → directions (the product's own pipeline) |
+
+```bash
+ANTHROPIC_API_KEY=… npm run benchmark                    # all arms, both cases, 3 runs each
+npm run benchmark -- --runs 5 --arms A,C --cases expense-review
+# optional judge: CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN to use Jev over REST
+```
+
+**Metrics** (PRD §40, §44), per arm, averaged over runs ([metrics.ts](src/lib/benchmark/metrics.ts)):
+
+| Metric | Meaning |
+|---|---|
+| Valid structured output | Runs that produced schema-valid directions |
+| Design-system component validity | Component references that exist in the design system |
+| Required states shown | Share of loading, empty and error states the directions represent |
+| Critical / protection failures | Failed critical checks, plus destructive actions without confirmation or undo |
+| UX evaluation score | The product's evaluator (15 questions + checks), judged against a reference analysis of the brief |
+| Explainability | Directions that cite a decided slot *and* a rule that actually fired |
+| Policy conformance ⚠ | Agreement with C's own decisions; favours C by construction, so it's flagged and should be discounted |
+| Component repeatability | Mean pairwise Jaccard similarity of the component sets across runs |
+| Decision stability (C) | Share of decision slots with the same choice in every run |
+| Latency | Mean wall-clock time per run |
+
+**Honest by default:**
+- Without an LLM key, arms A and B are reported as **not run**, C runs on the demo states, and the report says plainly that it doesn't answer the research question.
+- When the mock is the judge, the report says so.
+- Failed runs are counted as invalid output, not dropped.
+- The reference analysis falls back to the demo state if extraction fails.
+
+**Caveats to keep in mind:**
+- With an LLM and no Jev, the same LLM judges the evaluation questions it generated for A and B.
+- A real study adds Jev or a different model as the judge, plus expert designers (inter-rater agreement, PRD §44).
+
+The committed [docs/BENCHMARK.md](docs/BENCHMARK.md) is a **harness check** (no LLM was available when it was generated). Re-run with a key for real results.
+
+---
+
 ## Design System Intelligence
 
 [src/lib/design-system/](src/lib/design-system/)
@@ -1485,7 +1537,7 @@ Styling uses Tailwind CSS v4 with Geist fonts, light and dark, consistent with V
 ## Testing
 
 ```bash
-npm test     # 16 suites, 247 tests
+npm test     # 17 suites, 252 tests
 ```
 
 | Suite | Covers |
@@ -1504,6 +1556,7 @@ npm test     # 16 suites, 247 tests
 | `tests/ux/evaluate.test.ts` | UX Evaluate: the question set covers all 12 categories; one batched request with a scoped copy of every question per solution; the mock judging each solution on its own text; schema-valid evaluations of the draft directions with every check passing; a thin direction flagged with check and rule sources; the critical-override caps; net-new gap checks against Acme; a described UI judged by questions only (drag-only, unprotected delete, missing states); the scoring arithmetic; runs in the session trace |
 | `tests/ux/copy.test.ts` | UI Copy: one batched risk request; Reject gets the decided confirmation dialog with `{count}` and "can't be undone"; a designer override to undo changes the slots; required-state slots; money flagged for a paid subscription; drafts pass every hard guideline for both scenarios; the lint catches vague confirms, missing verbs, "No", "Are you sure", "Oops", missing counts and long strings (alternatives too); the LLM path's schema rejects "Yes" and missing slots; the session trace |
 | `tests/ux/feedback.test.ts` | Feedback Summary: quote verification (verbatim, normalised, "…"-shortened; invented quotes rejected); draft clustering into fragments and kinds; one batched request; "can't find export, every day" → FB_SURFACE_FREQUENT, data loss → FB_ADD_RECOVERY at P0, confusion → FB_PLAIN_LANGUAGE; reading against an analysis; prioritisation; the LLM path |
+| `tests/benchmark.test.ts` | Benchmark harness with a fake LLM: all three arms on the same brief (A invents components → 50% validity; B and C 100%; explainability 0 / 0 / 1; states coverage; protection failures; decision stability); without an LLM only C runs and the report says so; failed runs counted as invalid output; repeatability metrics |
 | `tests/ux/knowledge-doc.test.ts` | DSL rendering of rules (including vetoes as RULE OUT) and that `docs/KNOWLEDGE.md` matches `knowledge/` |
 | `tests/design-system/pipeline.test.ts` | Normalizer (names, states, variants, tokens, findings), capability mapping (declared, inferred, decision-model confirmation and rejection, designer review), and the full §21f worked example including override and accepted risk |
 
@@ -1551,7 +1604,7 @@ npm run deploy         # opennextjs-cloudflare build && opennextjs-cloudflare de
 
 Before deploying, make sure the Cloudflare account has Workers AI credits for Jev. Without them the app still works, using the fallback providers.
 
-> V2 has not been deployed yet; deploying is part of Milestone 10.
+> **Not deployed yet.** The build is deploy-ready (Next build and OpenNext Worker build pass), but the deploy itself is the owner's action: run `npm run deploy` from `v2/` with `wrangler login` done. Before deploying, add Workers AI credits for Jev, or accept that visitors get the fallback providers. The shared binding is capped at 2 Jev requests per IP per day.
 
 ---
 
@@ -1562,6 +1615,8 @@ v2/
 ├── docs/
 │   ├── PRD.md                      Product requirements v2.2
 │   ├── PLAN.md                     Implementation plan, decisions, status
+│   ├── ARCHITECTURE.md, UX-MODEL.md, DECISION-MODEL.md, UX-POLICY.md, DESIGN-SYSTEM.md
+│   ├── BENCHMARK.md                Generated benchmark report
 │   ├── KNOWLEDGE.md                Generated review copy of all rules, patterns, questions
 │   └── archive/                    PRD v2.0 and v2.1
 ├── knowledge/                      Versioned UX knowledge (validated at build)
@@ -1625,8 +1680,12 @@ v2/
 │       │   ├── copy/                    UI Copy: plan (risk → interaction → slots), lint, draft, generate
 │       │   ├── feedback/                Feedback Summary: cluster (verified quotes), summarize (judge, rules, priority), storage
 │       │   └── fixtures/                Golden states: expense dashboard, subscription sign-up
+│       ├── benchmark/              Arms A/B/C, metrics, runner + report
 │       └── nav.ts                  Primary navigation
-├── scripts/knowledge-doc.ts        npm run knowledge:doc
+├── scripts/
+│   ├── knowledge-doc.ts            npm run knowledge:doc
+│   └── benchmark.ts                npm run benchmark
+├── benchmark/results/              Benchmark JSON (git-ignored)
 ├── tests/                          Vitest suites
 ├── wrangler.jsonc                  Worker config: AI + KV bindings
 ├── next.config.ts                  Turbopack root pin + OpenNext dev bindings
@@ -1690,18 +1749,21 @@ Path aliases: `@/*` → `src/*`, `@knowledge/*` → `knowledge/*`.
 - **Copy targets are the state's actions.** If the state lists no actions there's nothing to write; edit the state to add them.
 - **An imported design system is per browser.** The active system lives in localStorage like everything else, so it isn't shared between devices.
 - **The state editor** offers in-place edits for hard constraints and assumptions only; everything else is edited as JSON.
-- **PRD §33 types the provider's state as `UXState`;** the implementation accepts any object. The architecture doc will reflect this.
+- **PRD §33 types the provider's state as `UXState`;** the implementation accepts any object (see [ARCHITECTURE.md](docs/ARCHITECTURE.md#deviations-from-the-prd)).
+- **The benchmark hasn't been run with an LLM.** The committed report only checks the harness; the research question is still open until it's run with a key (and ideally Jev).
 
 ---
 
 ## Roadmap
 
-**Milestone 10 (next):**
-- **Benchmark:** the three systems from PRD §43, on the same briefs:
-  - LLM-only;
-  - LLM + design system;
-  - decision-guided.
+All ten milestones are built. What remains, outside code:
 
-  It also compares the Jev provider with the LLM provider.
-- **Architecture docs:** UX-MODEL, DECISION-MODEL, UX-POLICY, DESIGN-SYSTEM, ARCHITECTURE.
-- **Deployment** of the `design-companion-v2` Worker.
+1. **Deploy:** `cd v2 && npm run deploy` (owner action).
+2. **Add Workers AI credits** so Jev answers instead of the fallbacks.
+3. **Review the knowledge:** [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) for rules, patterns, evaluation and copy guidelines, feedback rules and scoring constants. Rules and patterns then become 1.0.0.
+4. **Run the benchmark with a key** and read [docs/BENCHMARK.md](docs/BENCHMARK.md).
+
+**Later (PRD non-MVP):**
+- token, Storybook, repository and Figma import (§37 phases 2–5);
+- learning from overrides (§38);
+- an expert-rated evaluation study (§44).
